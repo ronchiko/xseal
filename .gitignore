@@ -1,0 +1,47 @@
+# IDE files
+.vs/
+.vscode/
+.build/
+
+# VC++ files
+x64/
+x86/
+Release/
+Debug/
+obj/
+bin/
+out/
+bin-int/
+
+# Solution files
+*.sln
+*.vcxproj
+*.vcproj
+*.vcxproj.filters
+*.vcxproj.user
+
+# Binary files
+*.obj
+*.elf
+*.so
+*.o
+*.a
+*.exe
+*.pdb
+*.idb
+*.lib
+*.dll
+
+# Log file
+*.log
+
+# Glsl files
+.shaders/
+*.spv
+
+# Python files
+__pycache__/
+*.pyc
+
+# Generated files
+.thirdparty.*
