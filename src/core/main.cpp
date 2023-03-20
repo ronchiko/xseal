@@ -19,7 +19,6 @@ int main()
 {
 	initialize_engine().expect("Failed to initialize engine");
 	
-	seal::log::info("Running in webGL");
 #ifdef SEAL_WEBGL
 	seal::log::info("Running in webGL");
 #endif

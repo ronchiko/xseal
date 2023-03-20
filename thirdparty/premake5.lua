@@ -32,7 +32,6 @@ project "fmt"
         optimize "on"
 
 
-
 -- GLFW library
 project "glfw"
 	kind "StaticLib"
@@ -53,7 +52,7 @@ project "glfw"
 		"glfw/src/vulkan.c",
 		"glfw/src/window.c"
 	}
-	filter "system:linux"
+	filter {"system:linux"}
 		pic "On"
 
 		systemversion "latest"
@@ -78,11 +77,11 @@ project "glfw"
 			"_GLFW_X11"
 		}
 
-	filter "system:windows"
+	filter {"system:windows"}
 		systemversion "latest"
 		staticruntime "On"
 
-		files
+		files	
 		{
 			"glfw/src/win32_init.c",
 			"glfw/src/win32_joystick.c",

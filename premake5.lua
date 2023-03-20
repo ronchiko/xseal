@@ -1,4 +1,7 @@
 ---@diagnostic disable: undefined-global
+
+require "ems"
+
 language "C++"
 cppdialect "C++20"
 
@@ -27,13 +30,11 @@ workspace "XSeal"
 	}
 
     filter {"configurations:Debug"}
-        defines { "SEAL_DEBUG" }
-        buildoptions "/MTd"
+        defines { "SEAL_DEBUG" }        
         symbols "on"
         runtime "Debug"
 
     filter {"configurations:Release"}
-        buildoptions "/MT"
         optimize "on"
         runtime "Release"
 
@@ -44,6 +45,8 @@ workspace "XSeal"
 
     filter {"platforms:Emscripten"}
         defines { "SEAL_WEBGL" }
+        system "Emscripten"
+        architecture "x64"
 
     filter {}
 
