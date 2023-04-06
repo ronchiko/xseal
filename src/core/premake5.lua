@@ -1,16 +1,20 @@
 ---@diagnostic disable: undefined-global
 project "seal_core"
-    kind "ConsoleApp"
+    kind "StaticLib"
     
     files {
         "**.cpp",
         "**.hpp",
         "**.h",
+        "**.inl",
+    }
+
+    includedirs {
+        "."
     }
 
     links {
         "glfw",
-        "glad",
         "fmt"
     }
 

@@ -16,3 +16,26 @@
 #else
 #define seal_force_inline
 #endif
+
+#if SEAL_ENABLE_EXCEPTIONS
+
+#define seal_mute_exceptions(expr)                                                                 \
+	try {                                                                                          \
+		expr                                                                                       \
+	} catch(...) {}
+
+#else
+#define seal_mute_exceptions(expr)                                                                 \
+	{                                                                                              \
+		expr                                                                                       \
+	}
+#endif
+
+
+#define seal_no_move(cls)                                                                          \
+	cls(cls&&) noexcept = delete;                                                                  \
+	cls& operator=(cls&&) noexcept = delete;
+
+#define seal_no_copy(cls)                                                                          \
+	cls(const cls&) noexcept = delete;                                                             \
+	cls& operator=(const cls&) noexcept = delete;

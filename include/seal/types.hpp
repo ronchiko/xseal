@@ -5,20 +5,24 @@
 #include <glm/glm.hpp>
 
 namespace seal {
-	using id = std::int32_t;
+	using id = std::uint32_t;
+	constexpr id INVALID_ID = 0;
+
+	using u8 = std::uint8_t;
 
 	using i32 = std::int32_t;
 	using u32 = std::uint32_t;
 
 	using f32 = float;
 
-	using vec2 = glm::vec<2, f32>;
-	using vec3 = glm::vec<3, f32>;
-	using vec4 = glm::vec<4, f32>;
+	template<typename TElement>
+	using v2 = glm::vec<2, TElement>;
 
-	using int2 = glm::vec<2, i32>;
-	using int3 = glm::vec<3, i32>;
-	using int4 = glm::vec<4, i32>;
+	template<typename TElement>
+	using v3 = glm::vec<3, TElement>;
+
+	template<typename TElement>
+	using v4 = glm::vec<4, TElement>;
 
 	struct ansi_string
 	{

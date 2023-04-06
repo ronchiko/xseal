@@ -20,6 +20,12 @@ bin-int/
 *.vcxproj.filters
 *.vcxproj.user
 
+# Make files
+Makefile
+*.make
+
+*.generated.*
+
 # Binary files
 *.obj
 *.elf

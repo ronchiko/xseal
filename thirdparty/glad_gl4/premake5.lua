@@ -1,8 +1,7 @@
 ---@diagnostic disable: undefined-global
-project "Glad"
+project "glad_gl4"
     kind "StaticLib"
     language "C"
-    staticruntime "off"
 
     targetdir ("out/" .. output_dir .. "/%{prj.name}")
     objdir ("obj/" .. output_dir .. "/%{prj.name}")

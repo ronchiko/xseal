@@ -1,7 +1,5 @@
 ---@diagnostic disable: undefined-global
-project "seal_include"
-    kind "None"
-    
+project "seal_include"    
     files {
         "**.cpp",
         "**.hpp",

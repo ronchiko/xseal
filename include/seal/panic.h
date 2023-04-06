@@ -1,6 +1,8 @@
 #pragma once
 
-#if SEAL_USE_EXCEPTIONS
+#include "seal/log/log.hpp"
+
+#if SEAL_ENABLE_EXCEPTIONS
 
 #include <stdexcept>
 
@@ -44,9 +46,9 @@ namespace seal {
 	};
 
 	template<>
-	struct _explicit_string<const char*>
+	struct _explicit_string<const char *>
 	{
-		constexpr explicit _explicit_string(const char* value)
+		constexpr explicit _explicit_string(const char *value)
 			: value(value)
 		{}
 
@@ -64,7 +66,12 @@ namespace seal {
  */
 #define seal_panic(message)                                                                        \
 	{                                                                                              \
-		::std::printf(::seal::_explicit_string(message));                                          \
+		::seal::log::error(::seal::_explicit_string(message));                                     \
 		::std::exit(SEAL_PANICED);                                                                 \
 	}
 #endif
+
+#define seal_assert(expr, message)                                                                 \
+	if(!(expr)) {                                                                                  \
+		seal_panic(message);                                                                       \
+	}

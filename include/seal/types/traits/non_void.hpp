@@ -9,9 +9,9 @@ namespace seal {
 	template<typename T>
 	struct _unusable
 	{
-		_unusable() = default;
+		constexpr _unusable() = default;
 
-		_unusable(T value)
+		constexpr _unusable(T value)
 			: value(std::move(value))
 		{}
 
@@ -26,5 +26,5 @@ namespace seal {
 	using _non_void = std::conditional_t<std::is_void_v<T>, _unusable<Alt>, T>;
 
 	template<typename T>
-	static _non_void<T> _void_dummy_v;
+	inline _non_void<T> _void_dummy_v;
 }

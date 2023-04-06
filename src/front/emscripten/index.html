@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head>
+
+<body>
+    <h1> XSeal Website </h1>
+    <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()"></canvas>
+    <script type='text/javascript'>
+
+        var Module =
+        {
+            preRun: [],
+            postRun: [],
+            canvas: (function () {
+                var canvas = document.getElementById('canvas');
+                canvas.addEventListener("webglcontextlost", function (e) { alert('WebGL context lost. You will need to reload the page.'); e.preventDefault(); }, false);
+
+                return canvas;
+            })()
+        };
+
+    </script>
+    <script async type="text/javascript" src="seal_ems.js"></script>
+</body>
+
+</html>
