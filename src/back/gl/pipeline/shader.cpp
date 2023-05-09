@@ -5,7 +5,7 @@
 #include "gl.hpp"
 #include "gl_id.hpp"
 
-namespace seal::gles3 {
+namespace seal::gl {
 	constexpr static GLint GL_SHADER_MAPPING[] = {
 		GL_VERTEX_SHADER,
 		GL_FRAGMENT_SHADER,

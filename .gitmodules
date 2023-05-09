@@ -18,3 +18,11 @@
 	path = thirdparty/emscripten-premake
 	url = https://github.com/TurkeyMan/premake-emscripten.git
 	branch = master
+[submodule "thirdparty/entt"]
+	path = thirdparty/entt
+	url = https://github.com/skypjack/entt
+	branch = master
+[submodule "thirdparty/googletest"]
+	path = thirdparty/googletest
+	url = https://github.com/google/googletest.git
+	branch = main

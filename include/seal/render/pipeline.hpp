@@ -1,6 +1,6 @@
 #pragma once
 
-
+#include "seal/api/tagged_object.hpp"
 #include "seal/api/back/pipeline.hpp"
 
 namespace seal {
@@ -9,16 +9,12 @@ namespace seal {
 	{
 	public:
 		constexpr pipeline() :
-			m_Id(0)
+			m_Id(api::UNTAGGED_OBJECT)
 		{}
 
-		constexpr pipeline(pipeline&& other) noexcept
-			: m_Id(other.m_Id)
-		{
-			other.m_Id = INVALID_ID;
-		}
+		constexpr pipeline(pipeline&& other) noexcept = default;
 
-		pipeline& operator=(pipeline&& other) noexcept;
+		pipeline& operator=(pipeline&& other) noexcept = default;
 
 		pipeline(const pipeline&) = delete;
 		pipeline& operator=(const pipeline&) = delete;
@@ -38,13 +34,13 @@ namespace seal {
 		void bind() const;
 
 	private:
-		constexpr pipeline(id id)
-			: m_Id(id)
+		constexpr pipeline(api::abstract_t id)
+			: m_Id(std::move(id))
 		{}
 
 		void release() noexcept;
 
-		id m_Id;
+		api::abstract_t m_Id;
 	};
 
 }

@@ -7,7 +7,7 @@
 #include "seal/defenitions.h"
 #include "seal/types.hpp"
 
-namespace seal::gles3 {
+namespace seal::gl {
 
 	struct gl_id
 	{

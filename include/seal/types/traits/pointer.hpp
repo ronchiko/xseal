@@ -64,20 +64,21 @@ namespace seal {
 
 	// -------------------------- Other -----------------------------
 	template<typename T>
-	constexpr bool
-		is_smart_pointer_v = is_unique_pointer_v<T> or is_shared_pointer_v<T>;
+	constexpr bool is_smart_pointer_v = is_unique_pointer_v<T> or is_shared_pointer_v<T>;
 
 	/**
-	   The raw pointer type of T (for example if T = std::unique_ptr<int> then this will return int*).
-	   Works for normal type, raw pointers, unique_ptr & shared_ptr.
+	   The raw pointer type of T (for example if T = std::unique_ptr<int> then this will return
+	   int*). Works for normal type, raw pointers, unique_ptr & shared_ptr.
 	 */
 	template<typename T>
 	using raw_ptr_type = std::conditional_t<
-		is_unique_pointer_v<T>,
+		is_unique_pointer_v<std::remove_reference_t<T>>,
 		typename unique_pointer_traits<T>::pointer_type,
-		std::conditional_t<is_shared_pointer_v<T>,
-						   typename shared_pointer_traits<T>::pointer_type,
-						   std::conditional_t<std::is_pointer_v<T>, T, T *>>>;
+		std::conditional_t<is_shared_pointer_v<std::remove_reference_t<T>>,
+						   typename shared_pointer_traits<std::remove_reference_t<T>>::pointer_type,
+						   std::conditional_t<std::is_pointer_v<std::remove_reference_t<T>>,
+											  T,
+											  std::remove_reference_t<T> *>>>;
 
 	/**
 	   Given a type T returns a raw pointer to T's base type.
@@ -88,7 +89,7 @@ namespace seal {
 	template<typename T>
 	constexpr raw_ptr_type<T> get_raw_pointer(T& obj)
 	{
-		if constexpr (is_smart_pointer_v<T>) {
+		if constexpr(is_smart_pointer_v<T>) {
 			return obj.get();
 		} else if constexpr(std::is_pointer_v<T>) {
 			return obj;

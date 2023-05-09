@@ -31,6 +31,34 @@ project "fmt"
         optimize "on"
 
 
+project "google-test"
+	kind "StaticLib"
+	language "C++"
+	cppdialect "C++20"
+
+	targetdir ("out/" .. output_dir .. "/%{prj.name}")
+	objdir ("obj/" .. output_dir .. "/%{prj.name}")
+
+	includedirs {
+		"googletest/googletest/include",
+		"googletest/googletest",
+	}
+
+	files {
+		"googletest/googletest/src/gtest-all.cc",
+		"googletest/googletest/*.h",
+		"googletest/googletest/*.hpp",
+	}
+
+	filter "configurations:Debug"
+		runtime "Debug"
+		symbols "on"
+
+	filter "configurations:Release"
+		runtime "Release"
+		optimize "on"
+
+
 -- GLFW library
 project "glfw"
 	kind "StaticLib"

@@ -7,14 +7,19 @@
 #include "types/window.hpp"
 
 #include "seal/types/result.hpp"
+#include "seal/types/rotating_queue.hpp"
 
-#include "seal/api/resource.hpp"
 #include "seal/api/back/backend.hpp"
-#include "seal/render/pipeline.hpp"
+#include "seal/api/resource.hpp"
 #include "seal/render/context.hpp"
+#include "seal/render/pipeline.hpp"
+
+#include "seal/engine/components/transform.hpp"
+#include "seal/engine/ecs/entity.hpp"
+#include "seal/engine/ecs/system.hpp"
+#include "seal/engine/systems/all.hpp"
 
 extern seal::result<void> register_all_embedded_resources();
-
 
 seal::result<void> initialize_engine()
 {
@@ -38,17 +43,25 @@ seal::result<void> invoke_main()
 	seal_verify_result(seal::api::initialize_backend());
 
 	auto pipeline = seal::pipeline::create_graphics({
-		seal::load_resource(R"(::\Vertex.glsl)").except("Failed to load resource"), 
-		seal::load_resource(R"(::\Fragment.glsl)").except("Failed to load resource"), 
-	}).except("Failed to create pipeline");	
+														seal::load_resource(R"(::\Vertex.glsl)")
+															.except("Failed to load resource"),
+														seal::load_resource(R"(::\Fragment.glsl)")
+															.except("Failed to load resource"),
+													})
+						.except("Failed to create pipeline");
+
+	seal::detail::register_all_builtin();
+
+	auto x = seal::entity::create();
+	x.add<seal::transform>();
 
 	while(!window->should_close()) {
-		
 		{
 			seal::render_context render_ctx{};
 			pipeline.bind();
 		}
 
+		seal::ecs::manager::tick(0);
 		window->swap_buffers();
 	}
 

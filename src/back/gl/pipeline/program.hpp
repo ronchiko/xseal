@@ -4,9 +4,10 @@
 #include "seal/types/result.hpp"
 
 #include "gl_id.hpp"
+#include "tags.h"
 #include "pipeline/shader.hpp"
 
-namespace seal::gles3 {
+namespace seal::gl {
 	class program
 	{
 	public:
@@ -43,3 +44,5 @@ namespace seal::gles3 {
 		gl_id m_Id;
 	};
 }
+
+seal_tag_type(seal::gl::program, seal::gl::tags::Program);

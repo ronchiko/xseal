@@ -7,6 +7,7 @@ WKS_DIR = os.getcwd()
 
 language "C++"
 cppdialect "C++20"
+cdialect "C17"
 
 defines { "X_SEAL" }
 workspace "XSeal"
@@ -28,7 +29,8 @@ workspace "XSeal"
         "thirdparty/glad_gl4/include",
         "thirdparty/glad_es2/include",
         "thirdparty/glfw/include",
-        "thirdparty/glm"
+        "thirdparty/glm",
+        "thirdparty/entt/single_include"
     }
 
     flags {
@@ -55,14 +57,14 @@ workspace "XSeal"
         system "Emscripten"
         architecture "x86"
         linkoptions {
-            "-lglfw"
+            "-lglfw",
         }
         removelinks {"glfw", "glad*"}
         startproject "seal_ems"
 
     filter {}
 
-output_dir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture }"
+output_dir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
 -- Base projects
 include "src/core"
@@ -79,6 +81,10 @@ group ""
 group "Backends"
     include "src/back/gl"
 group ""
+
+group "Tests"
+    include "tests/seal_core_tests"
+group "" 
 
 -- Thirdparty projects
 group "Thirdparty"

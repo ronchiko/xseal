@@ -4,6 +4,8 @@
 
 #include "seal/types.hpp"
 #include "seal/types/result.hpp"
+
+#include "seal/api/tagged_object.hpp"
 #include "seal/api/resource.hpp"
 
 namespace seal::api {
@@ -37,19 +39,19 @@ namespace seal::api {
 	/**
 	   Creates a new pipeline.
 	 */
-	result<id> create_pipeline(const pipeline_description& desc);
+	result<abstract_t> create_pipeline(const pipeline_description& desc);
 
 	/**
 	   Activate a pipeline (sets it as the current pipeline).
 
 	   \param pipeline: The id of the pipeline to bind
 	 */
-	result<void> bind_pipeline(id pipeline);
+	result<void> bind_pipeline(abstract_t pipeline);
 
 	/**
 	   Frees a pipeline.
 
 	   \param pipline: The id of the pipeline to free
 	 */
-	void free_pipeline(id pipeline);
+	void free_pipeline(abstract_t pipeline);
 }

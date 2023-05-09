@@ -1,6 +1,6 @@
 #pragma once
 
-#include "seal/types/color.h"
+#include "seal/types/color.hpp"
 #include "seal/types/result.hpp"
 
 

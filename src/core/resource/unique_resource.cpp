@@ -1,7 +1,7 @@
 #include "seal/api/resource.hpp"
 
 #include "seal/panic.h"
-#include "seal/types/id_provider.h"
+#include "seal/types/id_provider.hpp"
 
 namespace seal {
 	static id_provider g_ResourceIdProvider;

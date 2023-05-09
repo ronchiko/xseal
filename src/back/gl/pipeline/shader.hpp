@@ -5,7 +5,7 @@
 #include "gl.hpp"
 #include "gl_id.hpp"
 
-namespace seal::gles3 {
+namespace seal::gl {
 	class shader
 	{
 	public:

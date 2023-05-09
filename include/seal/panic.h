@@ -1,5 +1,6 @@
 #pragma once
 
+#include "seal/debug.h"
 #include "seal/log/log.hpp"
 
 #if SEAL_ENABLE_EXCEPTIONS
@@ -11,7 +12,7 @@ namespace seal {
 	{
 	public:
 		explicit panic_error(const char *message)
-			: std::exception(message)
+			: exception(message)
 		{}
 	};
 }
@@ -19,7 +20,9 @@ namespace seal {
 /**
  * Prints a message and throws an exception
  */
-#define seal_panic(message) throw ::seal::panic_error((message))
+#define seal_panic(message)                                                                        \
+	SEAL_DEBUGBREAK();                                                                             \
+	throw ::seal::panic_error((message))
 
 #else
 
@@ -67,11 +70,27 @@ namespace seal {
 #define seal_panic(message)                                                                        \
 	{                                                                                              \
 		::seal::log::error(::seal::_explicit_string(message));                                     \
+		SEAL_DEBUGBREAK();                                                                         \
 		::std::exit(SEAL_PANICED);                                                                 \
 	}
 #endif
+
+#ifdef SEAL_DEBUG
 
 #define seal_assert(expr, message)                                                                 \
 	if(!(expr)) {                                                                                  \
 		seal_panic(message);                                                                       \
 	}
+
+#define seal_wassert(expr, message)                                                                \
+	if(!(expr)) {                                                                                  \
+		seal::log::warning(message);                                                               \
+	}
+
+#else
+
+#define seal_wassert(expr, message)
+
+#define seal_assert(...)
+
+#endif // SEAL_DEBUG

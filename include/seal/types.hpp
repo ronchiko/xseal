@@ -3,6 +3,7 @@
 #include <cstdint>
 
 #include <glm/glm.hpp>
+#include <glm/gtx/quaternion.hpp>
 
 namespace seal {
 	using id = std::uint32_t;
@@ -10,10 +11,17 @@ namespace seal {
 
 	using u8 = std::uint8_t;
 
+	using i16 = std::int16_t;
+	using u16 = std::uint16_t;
+
 	using i32 = std::int32_t;
 	using u32 = std::uint32_t;
 
+	using i64 = std::int64_t;
+	using u64 = std::uint64_t;
+
 	using f32 = float;
+	using f64 = double;
 
 	template<typename TElement>
 	using v2 = glm::vec<2, TElement>;
@@ -23,6 +31,9 @@ namespace seal {
 
 	template<typename TElement>
 	using v4 = glm::vec<4, TElement>;
+
+	/// Quaternion
+	using quat = glm::qua<f32>;
 
 	struct ansi_string
 	{

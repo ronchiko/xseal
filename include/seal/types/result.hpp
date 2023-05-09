@@ -5,8 +5,8 @@
 #include <stdexcept>
 #include <variant>
 
-#include "seal/panic.h"
 #include "seal/log/log.hpp"
+#include "seal/panic.h"
 #include "seal/types/error_value.hpp"
 #include "seal/types/failure.hpp"
 #include "seal/types/traits/pointer.hpp"
@@ -17,7 +17,7 @@ namespace seal {
 	{
 	public:
 		explicit unexpected_result_type(const std::string& message)
-			: std::runtime_error(message)
+			: runtime_error(message)
 		{}
 	};
 
@@ -45,11 +45,10 @@ namespace seal {
 		using ValueT = TValue;
 		using ErrorT = TError;
 
-		
-		using ptr_type = std::conditional_t<is_shared_pointer_v<ValueT> ||
-													is_unique_pointer_v<ValueT>,
-												raw_ptr_type<ValueT>,
-												ValueT *>;
+
+		using ptr_type = std::conditional_t<is_shared_pointer_v<ValueT> || is_unique_pointer_v<ValueT>,
+											raw_ptr_type<ValueT>,
+											ValueT *>;
 
 		/**
 			Creates a new result with a value in it.
@@ -213,6 +212,41 @@ namespace seal {
 		std::optional<TError> m_error;
 	};
 
+	// Special result binding for reference types.
+	template<typename TValue, typename TError>
+	class result<TValue&, TError> : public result<std::reference_wrapper<TValue>, TError>
+	{
+	private:
+		using base_t = result<std::reference_wrapper<TValue>, TError>;
+
+	public:
+		using base_t::base_t;
+
+		constexpr result(TValue& value)
+			: base_t(std::ref(value))
+		{}
+
+		constexpr TValue *operator->()
+		{
+			return &this->value().get();
+		}
+
+		constexpr const TValue *operator->() const
+		{
+			return &this->value().get();
+		}
+
+		constexpr TValue& operator*()
+		{
+			return this->value().get();
+		}
+
+		constexpr const TValue& operator*() const
+		{
+			return this->value().get();
+		}
+	};
+
 	/// A result that represents any error (same as checking is_error() on a result)
 	struct generic_result_error
 	{
@@ -221,7 +255,7 @@ namespace seal {
 }
 
 #define seal_verify_result(...)                                                                    \
-	if(const auto& r = (__VA_ARGS__); ::seal::error_value_v<decltype(__VA_ARGS__)> == r) {         \
+	if(const auto& r = (__VA_ARGS__); seal_is_error(r)) {                                          \
 		return r;                                                                                  \
 	}
 

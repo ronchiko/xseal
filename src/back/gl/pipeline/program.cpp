@@ -1,6 +1,6 @@
 #include "pipeline/program.hpp"
 
-namespace seal::gles3 {
+namespace seal::gl {
 
 	result<program> program::link(std::span<shader> shaders) {
 		gl_id program = { glCreateProgram(), glDeleteProgram };
