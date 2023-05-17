@@ -64,6 +64,19 @@ namespace seal::ecs {
 	{
 		auto system = manager::system::add<T>(args...);
 
+		if constexpr(has_initialize_method_v<T>) {
+			static_assert(initialize_method_ok_v<T>,
+						  "Got invalid initialize method!"
+						  "a system initialize method must return a result<void> and get no arguments.");
+
+			result<void> initialization_status = reinterpret_cast<T *>(system.instance())->initialize();
+			// If initialization has failed, then don't register any method.
+			if (initialization_status.is_error()) {
+				seal::log::error("Failed to initalize system");
+				return;
+			}
+		}
+
 		if constexpr(has_update_method_v<T>) {
 			static_assert(update_ok_v<T>,
 						  "Got invalid update method! "
@@ -80,14 +93,6 @@ namespace seal::ecs {
 						  "a system update_once method must return void and get no arguments.");
 
 			system.update_listener(detail::update_once_dispatch<T>);
-		}
-
-		if constexpr(has_initialize_method_v<T>) {
-			static_assert(initialize_method_ok_v<T>,
-						  "Got invalid initialize method!"
-						  "a system initialize method must return nothing and get no arguments.");
-
-			reinterpret_cast<T *>(system.instance())->initialize();
 		}
 	}
 }

@@ -19,7 +19,7 @@ namespace seal::ecs {
 			using traits_t = method_traits<FunctionT>;
 			using tuple_t = traits_t::tuple_t;
 
-			static constexpr bool return_ok_v = std::is_void_v<typename traits_t::return_t>;
+			static constexpr bool return_ok_v = std::is_same_v<result<void>, typename traits_t::return_t>;
 			static constexpr bool arguments_ok_v = (std::tuple_size_v<tuple_t>) <= 0;
 
 		public:

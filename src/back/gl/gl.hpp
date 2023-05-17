@@ -6,7 +6,7 @@
 #include <glad/gles2.h>
 #include <GLFW/glfw3.h>
 
-#define SEAL_GLES_2
+#define SEAL_GLES_3
 
 #define SEAL_GL_NO_VAO
 
@@ -20,8 +20,16 @@
 #include "seal/types/result.hpp"
 
 namespace seal::gl {
-	inline auto fail(const GLenum err)
-	{
+	inline GLenum last_err() {
+		return glGetError();
+	}
+
+	/**
+	   Given a GL error return the failure message associated with it.
+	  
+	   \param err: The error value of get the message of.
+	 */
+	inline const char* failure_message(const GLenum err) {
 		const static std::unordered_map<GLenum, const char *> ERROR_MESSAGES = {
 			{ GL_INVALID_ENUM, "Invalid enum provided." },
 			{ GL_INVALID_VALUE, "Invalid value provided." },
@@ -38,10 +46,28 @@ namespace seal::gl {
 
 		const auto iter = ERROR_MESSAGES.find(err);
 		if(ERROR_MESSAGES.end() == iter) {
-			return ::seal::failure("Unexpected GL failure");
+			return "Unknown failure";
 		}
 
-		return ::seal::failure("GL failure: {}", iter->second);
+		return iter->second;
+	}
+
+	/**
+	   Returns a failure according to a gl error.
+	  
+	   \param err: The gl error to create the failure from
+	 */
+	inline auto fail(const GLenum err)
+	{
+		const auto *message = failure_message(err);
+		return ::seal::failure("GL failure: {}", message);
+	}
+
+	/**
+	   Creates a failure from the most recent gl error.
+	 */
+	inline auto fail() {
+		return fail(last_err());
 	}
 }
 

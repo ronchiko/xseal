@@ -2,7 +2,7 @@
 
 namespace seal::gl {
 
-#if defined(SEAL_GLES_2) || defined(SEAL_GL_NO_VAO)
+#if defined(SEAL_GLES_3) || defined(SEAL_GL_NO_VAO)
 
 	result<vertex_array> vertex_array::create_vertex_array() {
 		return vertex_array{};

@@ -4,7 +4,7 @@
 
 #include <GLFW/glfw3.h>
 
-#include "seal/render/pipeline.hpp"
+#include "seal/engine/engine.hpp"
 
 namespace seal::ems {
 	class context
@@ -12,7 +12,7 @@ namespace seal::ems {
 	public:
 		static context& get();
 
-		seal::pipeline pipeline;
+		seal::engine engine;
 		GLFWwindow *window;
 
 	private:

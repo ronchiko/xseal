@@ -16,6 +16,8 @@ namespace seal {
 		static constexpr channel_t CHANNEL_MIN = 0.0f;
 		static constexpr channel_t CHANNEL_MAX = 1.0f;
 
+		constexpr color() = default;
+
 		/**
 		   Creates a color from RGB values (opaque).
 

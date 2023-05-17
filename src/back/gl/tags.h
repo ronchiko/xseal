@@ -7,6 +7,6 @@ namespace seal::gl {
 	{
 		Start = 1000,
 		Program,
-		Batcher,
+		Batch,
 	};
 }

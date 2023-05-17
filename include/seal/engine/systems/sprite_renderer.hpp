@@ -14,7 +14,7 @@ namespace seal::system {
 	class sprite_renderer
 	{
 	public:
-		void initialize();
+		result<void> initialize();
 
 		void update_once();
 		

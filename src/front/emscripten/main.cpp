@@ -15,48 +15,40 @@
 
 #include "seal/engine/systems/all.hpp"
 
-extern seal::result<void> register_all_embedded_resources();
-
 using namespace seal;
 
 void mainloop()
 {
 	glfwPollEvents();
 	auto& ctx = ems::context::get();
+	seal_mute_exceptions({ ctx.engine.tick(0); });
 
-	{
-		seal::render_context render_ctx{};
-		ctx.pipeline.bind();
-	}
-
-	seal::ecs::manager::tick(0);
 	glfwSwapBuffers(ctx.window);
 }
 
 int main()
 {
-	seal_verify_result(register_all_embedded_resources());
-
 	auto& ctx = ems::context::get();
 
 	glfwInit();
 
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-	ctx.window = glfwCreateWindow(1200, 700, "My window", nullptr, nullptr);
+	ctx.window = glfwCreateWindow(1200, 700, "XSeal WebHost", nullptr, nullptr);
 	glfwMakeContextCurrent(ctx.window);
 
-	api::initialize_backend().expect("Failed to initialize backend");
+	auto engine = seal::engine::create();
+	seal_verify_result(engine);
 
-	detail::register_all_builtin().expect("Failed to register all systems");
+	ctx.engine = std::move(*engine);
 	
-	ctx.pipeline = pipeline::create_graphics(api::pipeline_description::graphics{
+	/*ctx.pipeline = pipeline::create_graphics(api::pipeline_description::graphics{
 												 load_resource(R"(::\Vertex.glsl)")
 													 .except("Failed to load vertex shader"),
 												 load_resource(R"(::\Fragment.glsl)")
 													 .except("Failed to load fragment shader"),
 											 })
-					   .except("Failed to create pipeline");
+					   .except("Failed to create pipeline");*/
 
 	emscripten_set_main_loop(mainloop, 0, true);
 

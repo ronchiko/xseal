@@ -16,7 +16,7 @@ namespace seal::gl {
 									nullptr,
 									static_cast<GLenum>(usage)));
 
-		return ::seal::gl::buffer{ buffer_id, type };
+		return ::seal::gl::buffer{ buffer_id, type, size };
 	}
 
 	void buffer::bind() const
@@ -24,8 +24,9 @@ namespace seal::gl {
 		glBindBuffer(static_cast<GLenum>(m_Type), m_BufferId);
 	}
 
-	buffer::buffer(GLuint id, type type) 
+	buffer::buffer(GLuint id, type type, size_t size) 
 		: m_BufferId(id, _glDeleteBuffer)
 		, m_Type(type)
+		, m_Size(size)
 	{}
 }

@@ -2,9 +2,12 @@
 
 #include <vector>
 
-#include "objects/buffer.hpp"
-#include "objects/vertex_array.hpp"
 #include "seal/api/back/vertex.hpp"
+
+#include "objects/buffer.hpp"
+#include "objects/controlled_buffer.hpp"
+#include "objects/vertex_array.hpp"
+#include "tags.h"
 
 namespace seal::gl {
 	class batch
@@ -12,29 +15,25 @@ namespace seal::gl {
 	public:
 		batch() = default;
 
-		static result<batch> create_batch(size_t max_vertex_count);
+		static result<batch> create_batch(const seal::api::batch_initialization& initialize);
 
-		/**
-		   Pushes a vertex into the batch.
-		  
-		   \param buffer: The buffer of vertecies to push
-		   \param amount: The amount of vertecies to push
-		 */
-		void push_vertecies(api::vertex *buffer, size_t amount);
+		result<seal::api::buffer> lock(seal::api::batch_buffer_type);
 
-		/**
-		   Publishes this batch.
-		 */
-		void publish();
+		result<void> unlock(seal::api::batch_buffer_type);
 
 	private:
-		batch(vertex_array vao, buffer vbo, buffer ibo, std::vector<api::vertex> vertecies);
+		explicit batch(vertex_array vao,
+					   flags<api::batch_hint> hint,
+					   controlled_buffer<api::vertex> vbo,
+					   controlled_buffer<u32> ibo);
 
 		vertex_array m_Vao;
-		buffer m_Vbo;
-		buffer m_Ibo;
+		flags<api::batch_hint> m_Hints;
 
-		std::vector<api::vertex> m_Vertecies;
+		controlled_buffer<api::vertex> m_Vbo;
+		controlled_buffer<u32> m_Ibo;
 	};
 
 }
+
+seal_tag_type(seal::gl::batch, seal::gl::tags::Batch);

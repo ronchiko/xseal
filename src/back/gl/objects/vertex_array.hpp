@@ -7,7 +7,7 @@
 
 namespace seal::gl {
 
-#if defined(SEAL_GL_NO_VAO) || defined(SEAL_GLES_2)
+#if defined(SEAL_GL_NO_VAO) || defined(SEAL_GLES_3)
 	class vertex_array
 	{
 	public:
