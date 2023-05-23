@@ -25,7 +25,7 @@ namespace seal::api {
 
 		   \param container: The container to bind.
 		 */
-		constexpr static buffer bind(container auto& container);
+		constexpr static buffer bind(const container auto& container);
 	};
 }
 
@@ -38,7 +38,7 @@ constexpr std::span<T> seal::api::buffer::view_as()
 	};
 }
 
-constexpr seal::api::buffer seal::api::buffer::bind(seal::container auto& container)
+constexpr seal::api::buffer seal::api::buffer::bind(const seal::container auto& container)
 {
 	using container_t = std::remove_cvref_t<decltype(container)>;
 	constexpr auto element_size = sizeof(typename container_traits<container_t>::element_t);

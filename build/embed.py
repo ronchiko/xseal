@@ -9,6 +9,7 @@ from cfile import create_c_embedded_file
 
 # File extensions to treat as text files
 TEXT_FILE_EXTENSIONS = ['.txt', '.glsl', '.vert', '.frag', '.md', '.json', '.yml', '.yaml']
+DEFAULT_EXPORT = 'register_all_embedded_resources'
 
 
 def __unpack_list_arguments(lst):
@@ -21,6 +22,7 @@ def _get_arguments():
     parser.add_argument('-o', action='store', type=str, help='Where to put the result file.', dest='output', default='embed.cpp')
     parser.add_argument('--recurse', action='store_true', dest='recurse', default=False, help='Search recursively')
     parser.add_argument('-s', action='store', type=str, dest='subpath', default='', help='The directory to embed into.')
+    parser.add_argument('--export', action='store', type=str, dest='export', default=DEFAULT_EXPORT, help='The name of the function to export.')
 
     return parser.parse_args()
 
@@ -47,7 +49,7 @@ def main():
             parts[_make_internal_name(relative_path, start=args.subpath)] = blob.add_item(opened_file.read())
 
     # Write the output to a file.
-    embedded_content = create_c_embedded_file(blob, parts)
+    embedded_content = create_c_embedded_file(blob, args.export, parts)
     with open(args.output, "wb+") as output_file:
         output_file.write(bytes(embedded_content, encoding='ascii'))
 

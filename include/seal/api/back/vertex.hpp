@@ -3,9 +3,11 @@
 #include "seal/types.hpp"
 #include "seal/types/color.hpp"
 #include "seal/types/flags.hpp"
+#include "seal/types/result.hpp"
 
 #include "seal/api/buffer.hpp"
 #include "seal/api/tagged_object.hpp"
+
 
 namespace seal::api {
 #pragma pack(push, 1)
@@ -17,16 +19,23 @@ namespace seal::api {
 	{
 		constexpr vertex() = default;
 
-		v3<f32> position;
-		v2<f32> uv;
-		id texture;
-		color tint;
+		constexpr vertex(v3<f32> position, v2<f32> uv, color tint)
+			: position(position)
+			, uv(uv)
+			, tint(tint)
+		{}
+
+		v3<f32> position = v3<f32>{ 0, 0, 0 };
+		v2<f32> uv = v2<f32>{ 0, 0 };
+		color tint = WHITE;
 	};
 
 #pragma pack(pop)
 
 	enum class batch_hint : u32
 	{
+		None = 0,
+
 		KeepIndecies = bit(0),	 // Hints the batch should keep the indecies in memory
 		KeepVertecies = bit(1), // Hints the batch should keep the vertecies in memory
 	};
@@ -73,10 +82,11 @@ namespace seal::api {
 
 	   \param batch: The the batch to lock the buffer from.
 	   \param type: The buffer indside the batch to lock.
+	   \param read: Should read the data into the current buffer.
 
 	   \return The buffer type associated with the batch.
 	 */
-	result<buffer> lock_batch_buffer(abstract_t batch, batch_buffer_type type);
+	result<buffer> lock_batch_buffer(abstract_t batch, batch_buffer_type type, bool read);
 
 	/**
 	   Unlocks the memory associated with a batch (locked with lock_batch_buffer).
@@ -84,14 +94,15 @@ namespace seal::api {
 
 	   \param batch: The batch the buffer was locked from.
 	   \param type: The type of buffer to unlock.
+	   \param write: Write the changes to the buffer
 
 	   \return The result of the operation.
 	 */
-	result<void> unlock_batch_buffer(abstract_t batch, batch_buffer_type type);
+	result<void> unlock_batch_buffer(abstract_t batch, batch_buffer_type type, bool write);
 
 	/**
 	   Renderers a batch to the screen.
 	 */
-	result<void> publish_batch(abstract_t batch);
+	result<void> publish_batch(abstract_t batch, size_t vertecies);
 
 }

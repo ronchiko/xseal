@@ -29,8 +29,8 @@ namespace seal::gl {
 	  
 	   \param err: The error value of get the message of.
 	 */
-	inline const char* failure_message(const GLenum err) {
-		const static std::unordered_map<GLenum, const char *> ERROR_MESSAGES = {
+	inline std::string failure_message(const GLenum err) {
+		const static std::unordered_map<GLenum, std::string> ERROR_MESSAGES = {
 			{ GL_INVALID_ENUM, "Invalid enum provided." },
 			{ GL_INVALID_VALUE, "Invalid value provided." },
 			{ GL_INVALID_OPERATION, "Invalid operation provided." },
@@ -46,7 +46,7 @@ namespace seal::gl {
 
 		const auto iter = ERROR_MESSAGES.find(err);
 		if(ERROR_MESSAGES.end() == iter) {
-			return "Unknown failure";
+			return fmt::format("Unknown failure (Code: {})", err);
 		}
 
 		return iter->second;
@@ -59,7 +59,7 @@ namespace seal::gl {
 	 */
 	inline auto fail(const GLenum err)
 	{
-		const auto *message = failure_message(err);
+		const auto message = failure_message(err);
 		return ::seal::failure("GL failure: {}", message);
 	}
 
@@ -73,6 +73,6 @@ namespace seal::gl {
 
 #define seal_gl_verify(expr)                                                                       \
 	expr;                                                                                          \
-	if(auto err = glGetError(); GL_NO_ERROR == err) {                                              \
+	if(auto err = glGetError(); GL_NO_ERROR != err) {                                              \
 		return ::seal::gl::fail(err);                                                              \
 	}

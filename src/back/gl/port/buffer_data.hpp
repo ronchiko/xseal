@@ -44,7 +44,7 @@ namespace seal::gl {
 		{
 			MapperT mapper;
 
-			auto address = mapper(type, start * sizeof(ElementT), size * sizeof(ElementT));
+			auto address = mapper(type, start, size);
 			seal_verify_result(address);
 
 			return basic_buffer_data{ type, reinterpret_cast<ElementT *>(*address) };
@@ -106,7 +106,8 @@ namespace seal::gl {
 
 	// A buffer data that can only be written to.
 	template<typename ElementT>
-	using writable_buffer_data = basic_buffer_data<ElementT,
-												   detail::buffer_mapper<GL_MAP_WRITE_BIT>,
-												   detail::buffer_unmapper>;
+	using writable_buffer_data = basic_buffer_data<
+		ElementT,
+		detail::buffer_mapper<GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_RANGE_BIT>,
+		detail::buffer_unmapper>;
 }

@@ -167,7 +167,9 @@ template<size_t PagedSize, typename StoreT>
 StoreT& seal::paged_storage<PagedSize, StoreT>::store(StoreT value)
 {
 	auto& secure_value = allocate_secure_value();
-	return secure_value = std::move(value);
+	secure_value = std::move(value);
+
+	return secure_value;
 }
 
 template<size_t PagedSize, typename StoreT>

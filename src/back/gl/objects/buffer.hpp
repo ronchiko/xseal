@@ -58,17 +58,38 @@ namespace seal::gl {
 		result<std::unique_ptr<ElementT[]>> read(size_t offset, size_t size);
 
 		/**
+		   Reads the memory into an already existing buffer.
+
+		   \param offset - The offset to read from
+		   \param size - The amount of bytes to read
+		   \param buffer - The buffer to read into.
+		 */
+		template<typename ElementT>
+		result<void> read_into(size_t offset, size_t size, ElementT *buffer);
+
+		/**
 		   Writes data in the buffer at an offset.
 		 */
 		template<typename ElementT>
 		result<void> write(size_t offset, std::span<ElementT> span);
 
+		/**
+		   The size of the buffer in bytes.
+		 */
 		constexpr size_t size() const
 		{
 			return m_Size;
 		}
 
+		template<typename T>
+		constexpr size_t size_in() const
+		{
+			return m_Size / sizeof(T);
+		}
+
 	private:
+		friend struct fmt::formatter<seal::gl::buffer>;
+
 		buffer(GLuint id, type type, size_t size);
 
 		gl_id m_BufferId;
@@ -98,27 +119,32 @@ template<typename T>
 seal::result<std::unique_ptr<T[]>> seal::gl::buffer::read(size_t offset, size_t size)
 {
 	std::unique_ptr<T[]> output{ new T[size] };
+
+	seal_verify_result(read_into<T>(0, size, output.get()));
+	return output;
+}
+
+template<typename T>
+seal::result<void> seal::gl::buffer::read_into(size_t offset, size_t size, T *elements)
+{
 	bind();
 
-#if defined(SEAL_GLES_3)
+#if defined(SEAL_GLES_3) || defined(SEAL_PREFER_MAPP_BUFFER)
 	// In GLES 3 we dont have glGetBufferSubData
 	seal_mute_exceptions({
 		auto buffer_data = readonly_buffer_data<T>::map(static_cast<GLenum>(m_Type),
 														offset * sizeof(T),
 														size * sizeof(T));
 		seal_verify_result(buffer_data);
-		std::memcpy(output.get(), buffer_data->data(), size * sizeof(T));
+		std::memcpy(elements, buffer_data->data(), size * sizeof(T));
 	});
 
-	seal_gl_verify(glUnmapBuffer(static_cast<GLenum>(m_Type)));
 
 #else
-	seal_gl_verify(glGetBufferSubData(static_cast<GLenum>(m_Type),
-									  offset * sizeof(T),
-									  size * sizeof(T),
-									  output.get()));
+	// If this call fails it means we might read from the buffer for the first time
+	glGetBufferSubData(static_cast<GLenum>(m_Type), offset * sizeof(T), size * sizeof(T), elements);
 #endif
-	return output;
+	return {};
 }
 
 template<typename T>
@@ -126,18 +152,20 @@ seal::result<void> seal::gl::buffer::write(size_t offset, std::span<T> data)
 {
 	bind();
 
-#if defined(SEAL_GLES_3)
+#if defined(SEAL_GLES_3) || defined(SEAL_PREFER_MAPP_BUFFER)
 	// In GLES 3 we dont have glBufferSubData
-	seal_mute_exceptions({
+	{
 		auto buffer_data = writable_buffer_data<T>::map(static_cast<GLenum>(m_Type),
 														offset * sizeof(T),
 														data.size_bytes());
 		seal_verify_result(buffer_data);
 		std::memcpy(buffer_data->data(), data.data(), data.size_bytes());
-	});
+	};
 
-	seal_gl_verify(glUnmapBuffer(static_cast<GLenum>(m_Type)));
 #else
+	GLint value = INT_MAX;
+	glGetBufferParameteriv(static_cast<GLenum>(m_Type), GL_BUFFER_SIZE, &value);
+
 	seal_gl_verify(glBufferSubData(static_cast<GLenum>(m_Type),
 								   offset * sizeof(T),
 								   data.size_bytes(),
@@ -145,3 +173,35 @@ seal::result<void> seal::gl::buffer::write(size_t offset, std::span<T> data)
 #endif
 	return {};
 }
+
+template<>
+struct fmt::formatter<seal::gl::buffer>
+{
+	/// Fixed presentation
+	char presentation = 'f';
+
+	constexpr auto parse(format_parse_context& ctx) -> decltype(ctx.begin())
+	{
+		if(ctx.begin() != ctx.end()) {
+			throw format_error("Invalid format!");
+		}
+
+		return ctx.end();
+	}
+
+	/**
+	   Writes the failure to the an iterator.
+
+	   \param failure: The failure to write
+	   \param ctx: The iterator to write to
+	 */
+	template<typename FormatContext>
+	auto format(const seal::gl::buffer& buffer, FormatContext& ctx) const -> decltype(ctx.out())
+	{
+		return fmt::format_to(ctx.out(),
+							  "Buffer(Id: {}, Size: {}, Type: {})",
+							  static_cast<GLuint>(buffer.m_BufferId),
+							  buffer.m_Size,
+							  static_cast<seal::u32>(buffer.m_Type));
+	}
+};

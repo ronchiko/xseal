@@ -8,14 +8,14 @@ namespace seal::ecs {
 	namespace detail {
 		// clang-format off
 		template<typename SystemT>
-		concept has_initialize_method = requires {
-			{ &SystemT::initialize };
+		concept has_update_last_method = requires {
+			{ &SystemT::update_last };
 		};
 
 		// clang-format on
 
 		template<typename FunctionT>
-		struct initialize_method_traits
+		struct update_last_method_traits
 		{
 		private:
 			using traits_t = method_traits<FunctionT>;
@@ -29,13 +29,13 @@ namespace seal::ecs {
 		};
 
 		template<typename SystemT>
-		struct safe_initialize_method_traits
+		struct safe_update_last_method_traits
 		{
 		private:
-			static_assert(has_initialize_method<SystemT>,
-						  "System doesn't have an initialize method.");
+			static_assert(has_update_last_method<SystemT>,
+						  "System doesn't have an update_last method.");
 
-			using traits_t = initialize_method_traits<decltype(&SystemT::initialize)>;
+			using traits_t = update_last_method_traits<decltype(&SystemT::update_last)>;
 
 		public:
 			static constexpr auto ok_v = traits_t::is_ok_v;
@@ -43,8 +43,8 @@ namespace seal::ecs {
 	}
 
 	template<typename SystemT>
-	constexpr auto has_initialize_method_v = detail::has_initialize_method<SystemT>;
+	constexpr auto has_update_last_method_v = detail::has_update_last_method<SystemT>;
 
 	template<typename SystemT>
-	constexpr auto initialize_method_ok_v = detail::safe_initialize_method_traits<SystemT>::ok_v;
+	constexpr auto update_last_ok_v = detail::safe_update_last_method_traits<SystemT>::ok_v;
 }

@@ -8,16 +8,24 @@
 
 #include "seal/engine/ecs/system/traits/initialize.hpp"
 #include "seal/engine/ecs/system/traits/update.hpp"
+#include "seal/engine/ecs/system/traits/update_last.hpp"
 #include "seal/engine/ecs/system/traits/update_once.hpp"
 
 namespace seal::ecs {
+
+	inline constexpr u32 PRIORITY_LATE = 1000;
+	inline constexpr u32 PRIORITY_UPDATE = 500;
+	inline constexpr u32 PRIORITY_EARLY = 100;
 
 	namespace detail {
 		template<typename Tuple>
 		struct do_registry_call;
 
-		template<typename... Elements>
-		struct do_registry_call<std::tuple<Elements...>>
+		/**
+		   Does an entt registry call correctly when we have an empty components list.
+		 */
+		template<typename... Components>
+		struct do_registry_call<std::tuple<Components...>>
 		{
 			entt::basic_registry<seal::entity_id>& registry;
 
@@ -28,8 +36,8 @@ namespace seal::ecs {
 			template<typename T>
 			auto each(T function)
 			{
-				if constexpr(sizeof...(Elements) > 0) {
-					return registry.view<std::remove_reference_t<Elements>...>().each(function);
+				if constexpr(sizeof...(Components) > 0) {
+					return registry.view<std::remove_reference_t<Components>...>().each(function);
 				} else {
 					// If we have an empty tuple we cant call each from a view and need to use a
 					// function.
@@ -57,6 +65,12 @@ namespace seal::ecs {
 		{
 			reinterpret_cast<SystemT *>(system)->update_once();
 		}
+
+		template<typename SystemT>
+		void update_last_dispatch(void *system)
+		{
+			reinterpret_cast<SystemT *>(system)->update_last();
+		}
 	}
 
 	template<typename T, typename... InitArgs>
@@ -69,9 +83,10 @@ namespace seal::ecs {
 						  "Got invalid initialize method!"
 						  "a system initialize method must return a result<void> and get no arguments.");
 
-			result<void> initialization_status = reinterpret_cast<T *>(system.instance())->initialize();
+			result<void> initialization_status = reinterpret_cast<T *>(system.instance())
+													 ->initialize();
 			// If initialization has failed, then don't register any method.
-			if (initialization_status.is_error()) {
+			if(initialization_status.is_error()) {
 				seal::log::error("Failed to initalize system");
 				return;
 			}
@@ -84,7 +99,7 @@ namespace seal::ecs {
 
 			using components = seal::tuple_remove_first_element_t<update_tuple_t<T>>;
 
-			system.update_listener(detail::update_dispatch<T, components>);
+			system.update_listener(detail::update_dispatch<T, components>, PRIORITY_UPDATE);
 		}
 
 		if constexpr(has_update_once_method_v<T>) {
@@ -92,7 +107,15 @@ namespace seal::ecs {
 						  "Got invalid update_once method!"
 						  "a system update_once method must return void and get no arguments.");
 
-			system.update_listener(detail::update_once_dispatch<T>);
+			system.update_listener(detail::update_once_dispatch<T>, PRIORITY_EARLY);
+		}
+
+		if constexpr(has_update_last_method_v<T>) {
+			static_assert(update_last_ok_v<T>,
+						  "Got invalid update_last method!"
+						  "a system update_once method must return void and get no arguments.");
+
+			system.update_listener(detail::update_last_dispatch<T>, PRIORITY_LATE);
 		}
 	}
 }

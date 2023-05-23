@@ -1,5 +1,7 @@
 #pragma once
 
+#include "seal/types/ext/result.hpp"
+
 #include "seal/engine/ecs/system/traits/method.hpp"
 
 namespace seal::ecs {
@@ -19,7 +21,7 @@ namespace seal::ecs {
 			using traits_t = method_traits<FunctionT>;
 			using tuple_t = traits_t::tuple_t;
 
-			static constexpr bool return_ok_v = std::is_void_v<typename traits_t::return_t>;
+			static constexpr bool return_ok_v = is_void_result_v<typename traits_t::return_t>;
 			static constexpr bool arguments_ok_v = (std::tuple_size_v<tuple_t>) <= 0;
 
 		public:

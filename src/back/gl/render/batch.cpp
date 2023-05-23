@@ -49,21 +49,27 @@ namespace seal {
 			};
 		}
 
-		result<api::buffer> batch::lock(const api::batch_buffer_type type)
+		result<api::buffer> batch::lock(const api::batch_buffer_type type, const bool read)
 		{
 			switch(type) {
 			case seal::api::batch_buffer_type::VertexBuffer:
 			{
-				auto view = m_Vbo.load();
-				seal_verify_result(view);
-				return seal::api::buffer::bind(*view);
+				seal_verify_result(m_Vbo.load());
+				if (read) {
+					seal_verify_result(m_Vbo.read());
+				}
+
+				return seal::api::buffer::bind(m_Vbo.view());
 			}
 
 			case seal::api::batch_buffer_type::IndexBuffer:
 			{
-				auto view = m_Ibo.load();
-				seal_verify_result(view);
-				return seal::api::buffer::bind(*view);
+				seal_verify_result(m_Ibo.load());
+				if(read) {
+					seal_verify_result(m_Ibo.read());
+				}
+
+				return seal::api::buffer::bind(m_Ibo.view());
 			}
 
 			default:
@@ -71,10 +77,14 @@ namespace seal {
 			}
 		}
 
-		result<void> batch::unlock(const api::batch_buffer_type type)
+		result<void> batch::unlock(const api::batch_buffer_type type, const bool write)
 		{
 			switch(type) {
 			case seal::api::batch_buffer_type::VertexBuffer:
+				if (write) {
+					m_Vbo.write();
+				}
+
 				// If we are hinted the buffer wont be changed, we should free it.
 				if(!m_Hints.is_active(api::batch_hint::KeepVertecies)) {
 					m_Vbo.unload();
@@ -82,6 +92,10 @@ namespace seal {
 				return {};
 
 			case seal::api::batch_buffer_type::IndexBuffer:
+				if(write) {
+					m_Ibo.write();
+				}
+
 				// If we shouldn't keep the indecies we can free them now.
 				if(!m_Hints.is_active(api::batch_hint::KeepIndecies)) {
 					m_Ibo.unload();
@@ -91,6 +105,20 @@ namespace seal {
 			default:
 				return seal::failure("Cant lock unsupported batch buffer type.");
 			}
+		}
+
+		result<void> batch::publish(size_t vertecies) {
+
+			m_Vao.bind();
+
+			m_Vbo->bind();
+			m_Vbo.flush();
+
+			m_Ibo->bind();
+			m_Ibo.flush();
+
+			seal_gl_verify(glDrawElements(GL_TRIANGLES, vertecies, GL_UNSIGNED_INT, NULL));
+			return {};
 		}
 	}
 
@@ -108,17 +136,23 @@ namespace seal {
 		m_Batches.erase(*batch_obj);
 	}
 
-	result<api::buffer> api::lock_batch_buffer(api::abstract_t batch, api::batch_buffer_type type)
+	result<api::buffer> api::lock_batch_buffer(api::abstract_t batch, api::batch_buffer_type type, bool read)
 	{
 		auto *batch_obj = batch.acquire<gl::batch>();
 
-		return batch_obj->lock(type);
+		return batch_obj->lock(type, read);
 	}
 
-	result<void> api::unlock_batch_buffer(api::abstract_t batch, api::batch_buffer_type type)
+	result<void> api::unlock_batch_buffer(api::abstract_t batch, api::batch_buffer_type type, bool write)
 	{
 		auto *batch_obj = batch.acquire<gl::batch>();
 
-		return batch_obj->unlock(type);
+		return batch_obj->unlock(type, write);
+	}
+
+	result<void> api::publish_batch(api::abstract_t batch, size_t vertecies) {
+		auto *batch_obj = batch.acquire<gl::batch>();
+		
+		return batch_obj->publish(vertecies);
 	}
 }

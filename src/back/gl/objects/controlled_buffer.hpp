@@ -20,17 +20,12 @@ namespace seal::gl {
 		/**
 		   Load the buffers content into memory.
 		 */
-		result<std::span<ElementT>> load()
+		result<void> load()
 		{
-			if(nullptr != m_Memory) {
-				return std::span{ m_Memory.get(), m_Buffer.size() };
+			if(nullptr == m_Memory) {
+				m_Memory = std::unique_ptr<ElementT[]>(new ElementT[m_Buffer.size_in<ElementT>()]);
 			}
-
-			auto read_result = m_Buffer.read<ElementT>(0, m_Buffer.size());
-			seal_verify_result(read_result);
-
-			m_Memory = std::move(*read_result);
-			return std::span{ m_Memory.get(), m_Buffer.size() };
+			return {};
 		}
 
 		/**
@@ -42,14 +37,38 @@ namespace seal::gl {
 				return;
 			}
 
-			// Rewrite the memory to the buffer.
-			auto write_result = m_Buffer.write(0, std::span{ m_Memory.get(), m_Buffer.size() });
-			if(!write_result) {
-				seal::log::warning("Failed to write to gl buffer: {}", failure_message(last_err()));
+			m_Memory = nullptr;
+		}
+
+		void write()
+		{
+			// Nothing to upload.
+			if(nullptr == m_Memory) {
+				seal::log::error("Attempted to upload a non allocated buffer");
 				return;
 			}
 
-			m_Memory = nullptr;
+			// Rewrite the memory to the buffer.
+			auto write_result = m_Buffer.write(0,
+											   std::span{ m_Memory.get(),
+														  m_Buffer.size_in<ElementT>() });
+			if(!write_result) {
+				seal::log::warning("Failed to write to gl buffer {}: {}", m_Buffer, write_result.error().what());
+				return;
+			}
+		}
+
+		result<std::span<ElementT>> read()
+		{
+			if(nullptr == m_Memory) {
+				seal::log::error("Attempted to read into non allocated buffer");
+				return seal::failure("Attempted to read into non allocated buffer");
+			}
+
+			seal_verify_result(m_Buffer.read_into<ElementT>(0,
+															m_Buffer.size_in<ElementT>(),
+															m_Memory.get()));
+			return view();
 		}
 
 		constexpr buffer *operator->()
@@ -60,6 +79,18 @@ namespace seal::gl {
 		constexpr ElementT *get()
 		{
 			return m_Memory.get();
+		}
+
+		constexpr std::span<ElementT> view()
+		{
+			return { m_Memory.get(), m_Buffer.size_in<ElementT>() };
+		}
+
+		void flush() {
+			// If we have something to flush, then flush it.
+			if(nullptr != m_Memory) {
+				write();
+			}
 		}
 
 	private:

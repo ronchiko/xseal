@@ -30,6 +30,7 @@ workspace "XSeal"
         "thirdparty/glad_es2/include",
         "thirdparty/glfw/include",
         "thirdparty/glm",
+        "thirdparty/json/include",
         "thirdparty/entt/single_include"
     }
 
@@ -68,6 +69,7 @@ output_dir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
 -- Base projects
 include "src/core"
+include "src/resources"
 include "include/seal"
 
 group "Frontends"

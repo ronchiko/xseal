@@ -2,6 +2,8 @@
 
 #include <functional>
 
+#include "seal/types.hpp"
+
 #include "seal/engine/ecs/system/system_interface.hpp"
 
 namespace seal::ecs::manager {
@@ -29,8 +31,7 @@ namespace seal::ecs::manager {
 
 		   \param listener: The listener to add.
 		 */
-		void update_listener(system_function listener);
-		void update_once_listener(system_function listener);
+		void update_listener(system_function listener, u32 priority);
 
 		void *instance();
 
@@ -43,6 +44,11 @@ namespace seal::ecs::manager {
 
 		void *m_System;
 	};
+
+	/*
+		Locks the manager, preventing modification to its state.
+	 */
+	void lock();
 
 	/**
 	   Trigger a tick (Invokes all the udpdate methods).

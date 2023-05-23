@@ -30,7 +30,7 @@ project "fmt"
         runtime "Release"
         optimize "on"
 
-
+-- Google test --
 project "google-test"
 	kind "StaticLib"
 	language "C++"
@@ -140,3 +140,4 @@ project "glfw"
 	filter "configurations:Release"
 		runtime "Release"
 		optimize "on"
+

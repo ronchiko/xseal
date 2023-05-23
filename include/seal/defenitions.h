@@ -22,6 +22,8 @@
 #define seal_mute_exceptions(expr)                                                                 \
 	try {                                                                                          \
 		expr                                                                                       \
+	} catch(const std::exception& err) {                                                           \
+		seal::log::error("Exception: {}", err.what());                                             \
 	} catch(...) {}
 
 #else

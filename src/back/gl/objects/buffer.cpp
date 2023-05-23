@@ -16,6 +16,9 @@ namespace seal::gl {
 									nullptr,
 									static_cast<GLenum>(usage)));
 
+		GLint value = INT_MAX;
+		glGetBufferParameteriv(static_cast<GLenum>(type), GL_BUFFER_SIZE, &value);
+
 		return ::seal::gl::buffer{ buffer_id, type, size };
 	}
 

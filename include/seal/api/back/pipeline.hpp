@@ -9,12 +9,20 @@
 #include "seal/api/resource.hpp"
 
 namespace seal::api {
+
+	namespace shader {
+		// Attributes
+		inline constexpr const char* VERTEX_PARAM_NAME = "Seal_Vertex";
+		inline constexpr const char *UV_PARAM_NAME = "Seal_UV";
+		inline constexpr const char *TINT_PARAM_NAME = "Seal_Tint";
+	}
+
 	/**
 	   Describes a pipeline.
 	 */
 	struct pipeline_description
 	{
-		enum
+		enum type_t
 		{
 			GraphicsPipeline,
 			ComputationPipeline

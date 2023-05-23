@@ -26,10 +26,11 @@ namespace seal {
 		{
 			CustonNonFatal = NON_FATAL_ERROR,
 			EndReached, // The end of something was reached (file or stream)
+			ExternalFailure,	// An external library/program has caused the failure.
 
 			Custom = FATAL_ERROR,
 			NotSupported,	// The requested operation is not supported
-			NotImplemented  // The requested operation is not implemented
+			NotImplemented,  // The requested operation is not implemented
 		};
 
 		constexpr explicit failure(std::string message, fail_type type = Custom);

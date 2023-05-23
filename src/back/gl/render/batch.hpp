@@ -17,15 +17,22 @@ namespace seal::gl {
 
 		static result<batch> create_batch(const seal::api::batch_initialization& initialize);
 
-		result<seal::api::buffer> lock(seal::api::batch_buffer_type);
+		result<seal::api::buffer> lock(seal::api::batch_buffer_type, bool read);
 
-		result<void> unlock(seal::api::batch_buffer_type);
+		result<void> unlock(seal::api::batch_buffer_type, bool write);
+
+		result<void> publish(size_t vertecies);
 
 	private:
 		explicit batch(vertex_array vao,
 					   flags<api::batch_hint> hint,
 					   controlled_buffer<api::vertex> vbo,
-					   controlled_buffer<u32> ibo);
+					   controlled_buffer<u32> ibo) 
+			: m_Vao(std::move(vao))
+			, m_Hints(hint)
+			, m_Vbo(std::move(vbo))
+			, m_Ibo(std::move(ibo))
+		{}
 
 		vertex_array m_Vao;
 		flags<api::batch_hint> m_Hints;

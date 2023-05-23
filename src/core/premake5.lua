@@ -2,6 +2,7 @@
 project "seal_core"
     kind "StaticLib"
     
+    filter {}
     files {
         "**.cpp",
         "**.hpp",
@@ -14,8 +15,8 @@ project "seal_core"
     }
 
     links {
-        "glfw",
-        "fmt"
+        "fmt",
+        "seal_resources"
     }
 
     targetdir ("%{wks.location}/out/" .. output_dir .. "/%{prj.name}")

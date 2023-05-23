@@ -3,8 +3,6 @@
 #include <GLFW/glfw3.h>
 
 #include "seal/api/back/backend.hpp"
-#include "seal/render/context.hpp"
-#include "seal/render/pipeline.hpp"
 
 #include "seal/engine/components/transform.hpp"
 #include "seal/engine/ecs/manager.hpp"

@@ -38,10 +38,8 @@ namespace seal::gl {
 		gl_id& operator=(gl_id&& other) noexcept
 		{
 			seal_mute_exceptions({
-				release();
-
-				std::exchange(m_Id, other.m_Id);
-				std::exchange(m_Deletor, other.m_Deletor);
+				other.m_Id = std::exchange(m_Id, other.m_Id);
+				other.m_Deletor = std::exchange(m_Deletor, other.m_Deletor);
 			});
 
 			return *this;
@@ -50,6 +48,7 @@ namespace seal::gl {
 		~gl_id() noexcept
 		{
 			seal_mute_exceptions({ release(); });
+			m_Id = INVALID_ID;
 		}
 
 		constexpr operator GLuint() const

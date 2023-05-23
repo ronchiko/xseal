@@ -3,8 +3,9 @@
 #include <tuple>
 #include <type_traits>
 
-#include "seal/engine/ecs/entity.hpp"
+#include "seal/types/ext/result.hpp"
 
+#include "seal/engine/ecs/entity.hpp"
 #include "seal/engine/ecs/system/traits/method.hpp"
 
 namespace seal::ecs {
@@ -33,7 +34,7 @@ namespace seal::ecs {
 			using tuple_t = traits_t::tuple_t;
 
 		private:
-			static constexpr bool return_ok_v = std::is_void_v<typename traits_t::return_t>;
+			static constexpr bool return_ok_v = is_void_result_v<typename traits_t::return_t>;
 			static constexpr bool first_argument_ok_v = update_argument_pack_ok<tuple_t>::value;
 
 		public:

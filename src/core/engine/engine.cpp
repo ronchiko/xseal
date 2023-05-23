@@ -5,6 +5,7 @@
 #include "seal/engine/systems/all.hpp"
 
 extern seal::result<void> register_all_embedded_resources();
+extern seal::result<void> register_global_resources();
 
 namespace seal {
 
@@ -14,6 +15,7 @@ namespace seal {
 		seal_verify_result(seal::log::initialize());
 		
 		// Then register all the embedded resources because they might be used in the later steps.
+		seal_verify_result(register_global_resources());
 		seal_verify_result(register_all_embedded_resources());
 
 		// Initialize the backend engine.
@@ -21,6 +23,9 @@ namespace seal {
 
 		// Register all builtin systems last, so they could use the backend/resource manager to perform logic.
 		seal_verify_result(detail::register_all_builtin());
+
+		// Lock the manager since we created our engine.
+		seal::ecs::manager::lock();
 
 		return seal::engine();
 	}
