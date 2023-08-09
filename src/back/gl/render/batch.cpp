@@ -2,25 +2,34 @@
 
 #include "seal/types/storage.hpp"
 
+#include "pipeline/program.hpp"
+
 inline static seal::storage<seal::gl::batch> m_Batches;
 
 namespace seal {
 	namespace gl {
 		/**
 		   Creates a controlled buffer.
+
+		   @tparam Type: The type of the buffer to create
+		   @tparam ModeHint: The bit to check to decide if our buffer is dynamic or static.
+		   @tparam BufferType: The type held inside the buffer.
+
+		   @param hints: The hints passed down from the caller.
+		   @param size: The amount of elements in the buffer (in BufferType's).
 		 */
-		template<buffer::type Type, api::batch_hint ModeHint, typename BufferTypeT>
-		result<controlled_buffer<BufferTypeT>> create_buffer(flags<api::batch_hint> hints,
+		template<buffer::type Type, api::batch_hint ModeHint, typename BufferType>
+		result<controlled_buffer<BufferType>> create_buffer(flags<api::batch_hint> hints,
 															 size_t size)
 		{
 			using buffer::usage::DynamicDraw;
 			using buffer::usage::StaticDraw;
 
 			const auto buffer_mode = hints.is_active(ModeHint) ? DynamicDraw : StaticDraw;
-			auto new_buffer = buffer::create_buffer(Type, buffer_mode, size * sizeof(BufferTypeT));
+			auto new_buffer = buffer::create_buffer(Type, buffer_mode, size * sizeof(BufferType));
 			seal_verify_result(new_buffer);
 
-			return controlled_buffer<BufferTypeT>(std::move(*new_buffer));
+			return controlled_buffer<BufferType>(std::move(*new_buffer));
 		}
 
 		result<batch> batch::create_batch(const api::batch_initialization& initialize)
@@ -112,12 +121,12 @@ namespace seal {
 			m_Vao.bind();
 
 			m_Vbo->bind();
-			m_Vbo.flush();
-
 			m_Ibo->bind();
+
+			m_Vbo.flush();
 			m_Ibo.flush();
 
-			seal_gl_verify(glDrawElements(GL_TRIANGLES, vertecies, GL_UNSIGNED_INT, NULL));
+			seal_gl_verify(glDrawElements(GL_TRIANGLES, vertecies, GL_UNSIGNED_INT, nullptr));
 			return {};
 		}
 	}
@@ -154,5 +163,15 @@ namespace seal {
 		auto *batch_obj = batch.acquire<gl::batch>();
 		
 		return batch_obj->publish(vertecies);
+	}
+
+	result<void> api::bind_batcher_to_pipeline(api::abstract_t batch, api::abstract_t pipeline) {
+		auto *pipeline_obj = pipeline.acquire<gl::program>();
+		auto *batch_obj = batch.acquire<gl::batch>();
+
+		pipeline_obj->bind();
+
+		pipeline_obj->bind_shader_information(batch_obj->vao().id());
+		return {};
 	}
 }

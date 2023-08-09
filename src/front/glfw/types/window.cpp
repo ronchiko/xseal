@@ -1,3 +1,5 @@
+#include "seal/api/back/backend.hpp"
+
 #include "types/window.hpp"
 
 #include "glfw.hpp"
@@ -55,6 +57,13 @@ namespace seal::glfw {
 	
 	void window::swap_buffers() {
 		glfwSwapBuffers(m_Window);
+	}
+
+	v2<u32> window::resolution() const {
+		int width = 0, height = 0;
+		glfwGetWindowSize(m_Window, &width, &height);
+
+		return v2<u32>{ width, height };
 	}
 
 	constexpr window::window(GLFWwindow *window) noexcept

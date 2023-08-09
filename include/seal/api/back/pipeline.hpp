@@ -26,7 +26,7 @@ namespace seal::api {
 		{
 			GraphicsPipeline,
 			ComputationPipeline
-		} type;
+		};
 		
 		// Description for a graphics pipeline
 		struct graphics
@@ -41,6 +41,7 @@ namespace seal::api {
 			resource compute;
 		};
 
+		type_t type;
 		std::variant<graphics, compute> description;
 	};
 

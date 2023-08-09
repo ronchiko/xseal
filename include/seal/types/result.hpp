@@ -67,7 +67,7 @@ namespace seal {
 		constexpr result(error<TError> error)
 			: m_value(std::move(error.take()))
 		{}
-
+		
 		/**
 		   Checks if the result contains an error.
 

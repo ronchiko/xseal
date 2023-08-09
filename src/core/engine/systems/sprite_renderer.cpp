@@ -2,13 +2,19 @@
 
 #include "seal/types/id_provider.hpp"
 
-static constexpr size_t VERTECIES_PER_BATCH = 1024;
+static constexpr size_t VERTECIES_PER_BATCH = 4;
 
 namespace seal::system {
 	result<void> sprite_renderer::initialize()
 	{
 		auto ent = seal::entity::create();
-		ent.add<sprite>();
+		auto& sp = ent.add<sprite>();
+		
+		sp.tint = seal::WHITE;
+
+		// auto re = sp.shader.acquire();
+		// seal_verify_result(re);
+		
 		ent.add<transform>();
 
 		return {};
@@ -97,6 +103,11 @@ namespace seal::system {
 			0,
 			sprite.shader.co_own(),
 		};
+
+		auto pipeline = sprite.shader.acquire();
+		seal_verify_result(pipeline);
+
+		seal_verify_result(batch->link_with_pipeline(*pipeline));
 
 		return std::ref(m_Queues.emplace(std::make_pair(uuid, std::move(queue)))->second);
 	}

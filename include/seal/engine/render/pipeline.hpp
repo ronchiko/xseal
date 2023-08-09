@@ -39,6 +39,11 @@ namespace seal {
 		bool operator==(const pipeline& other) const;
 		bool operator!=(const pipeline& other) const;
 
+		constexpr operator api::abstract_t() const
+		{
+			return m_Id;
+		}
+
 	private:
 		constexpr pipeline(api::abstract_t id)
 			: m_Id(std::move(id))

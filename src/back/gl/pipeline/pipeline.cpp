@@ -33,8 +33,11 @@ namespace seal::api {
 		auto program = gl::program::link(std::span{ shaders });
 		seal_verify_result(program);
 
+		auto& pipline = g_LoadedPrograms.store(std::move(*program));
+		pipline.setup_attributes(desc.type);
+
 		// Move the program into the global storage
-		return abstract_t::bind(g_LoadedPrograms.store(std::move(*program)));
+		return abstract_t::bind(pipline);
 	}
 
 	result<void> bind_pipeline(abstract_t pipeline)
@@ -43,6 +46,12 @@ namespace seal::api {
 		auto *obj = pipeline.acquire<seal::gl::program>();
 
 		obj->bind();
+
+#if defined(SEAL_GL_NO_VAO)
+		// In ES3 there are no VAO so we have to bind the information every time.
+		obj->bind_shader_information(0);
+#endif
+
 		return {};
 	}
 

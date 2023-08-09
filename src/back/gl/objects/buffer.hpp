@@ -129,7 +129,7 @@ seal::result<void> seal::gl::buffer::read_into(size_t offset, size_t size, T *el
 {
 	bind();
 
-#if defined(SEAL_GLES_3) || defined(SEAL_PREFER_MAPP_BUFFER)
+#if defined(SEAL_GLES_3) || defined(SEAL_PREFER_MAP_BUFFER)
 	// In GLES 3 we dont have glGetBufferSubData
 	seal_mute_exceptions({
 		auto buffer_data = readonly_buffer_data<T>::map(static_cast<GLenum>(m_Type),
@@ -152,7 +152,7 @@ seal::result<void> seal::gl::buffer::write(size_t offset, std::span<T> data)
 {
 	bind();
 
-#if defined(SEAL_GLES_3) || defined(SEAL_PREFER_MAPP_BUFFER)
+#if defined(SEAL_GLES_3) || defined(SEAL_PREFER_MAP_BUFFER)
 	// In GLES 3 we dont have glBufferSubData
 	{
 		auto buffer_data = writable_buffer_data<T>::map(static_cast<GLenum>(m_Type),

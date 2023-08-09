@@ -1,9 +1,10 @@
 #pragma once
 
+#include "seal/types/result.hpp"
+
 #include "gl.hpp"
 #include "gl_id.hpp"
-
-#include "seal/types/result.hpp"
+#include "port/shader_information.hpp"
 
 namespace seal::gl {
 
@@ -25,6 +26,11 @@ namespace seal::gl {
 		 */
 		void bind() const;
 
+		constexpr GLuint id() const
+		{
+			return 0;
+		}
+
 	private:
 	};
 
@@ -43,6 +49,16 @@ namespace seal::gl {
 		   Binds this VAO.
 		 */
 		void bind() const;
+
+		/**
+		   The id of this vao.
+		  
+		   \return 
+		 */
+		constexpr GLuint id() const
+		{
+			return m_Id;
+		}
 
 	private:
 		vertex_array(GLuint id);

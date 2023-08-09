@@ -40,11 +40,16 @@ namespace seal::glfw {
 		 */
 		void swap_buffers();
 
+		/**
+		   Gets the resolution of this window.
+		 */
+		v2<u32> resolution() const;
+
 	private:
 		explicit constexpr window(GLFWwindow *window) noexcept;
 
 		void release_window() noexcept;
 
-		GLFWwindow *m_Window;
+		GLFWwindow *m_Window = nullptr;
 	};
 }

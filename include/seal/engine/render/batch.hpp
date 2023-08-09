@@ -1,8 +1,10 @@
 #pragma once
 
+#include "seal/types/result.hpp"
+#include "seal/engine/render/pipeline.hpp"
+
 #include "seal/api/back/vertex.hpp"
 
-#include "seal/types/result.hpp"
 
 namespace seal {
 	class batch
@@ -48,6 +50,11 @@ namespace seal {
 			Publishes the batch to the screen.
 		*/
 		void publish(size_t vertecies) const;
+
+		/*
+			Links this batcher with a pipeline
+		*/
+		result<void> link_with_pipeline(pipeline& pipeline);
 
 	private:
 		constexpr batch(api::abstract_t batch)

@@ -23,6 +23,11 @@ namespace seal::gl {
 
 		result<void> publish(size_t vertecies);
 
+		const vertex_array& vao() const
+		{
+			return m_Vao;
+		}
+
 	private:
 		explicit batch(vertex_array vao,
 					   flags<api::batch_hint> hint,

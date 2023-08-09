@@ -20,4 +20,10 @@ namespace seal::api {
 		return {};
 	}
 
+	result<void> update_resolution(const v2<u32>& resolution) {
+		glViewport(0, 0, resolution.x, resolution.y);
+
+		return {};
+	}
+
 }

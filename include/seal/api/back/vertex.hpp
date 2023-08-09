@@ -21,12 +21,12 @@ namespace seal::api {
 
 		constexpr vertex(v3<f32> position, v2<f32> uv, color tint)
 			: position(position)
-			, uv(uv)
+			// , uv(uv) TODO: When textures
 			, tint(tint)
 		{}
 
 		v3<f32> position = v3<f32>{ 0, 0, 0 };
-		v2<f32> uv = v2<f32>{ 0, 0 };
+		// v2<f32> uv = v2<f32>{ 0, 0 }; TODO: When textures
 		color tint = WHITE;
 	};
 
@@ -99,6 +99,14 @@ namespace seal::api {
 	   \return The result of the operation.
 	 */
 	result<void> unlock_batch_buffer(abstract_t batch, batch_buffer_type type, bool write);
+
+	/**
+	   Binds a batcher to a pipline, generating the nessecary information for the binding.
+
+	   \param batch: The batch to bind
+	   \param pipline: The pipeline to bind to
+	 */
+	result<void> bind_batcher_to_pipeline(abstract_t batch, abstract_t pipeline);
 
 	/**
 	   Renderers a batch to the screen.

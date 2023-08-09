@@ -12,12 +12,12 @@
 #include "seal/api/back/backend.hpp"
 #include "seal/api/resource.hpp"
 
+#include "seal/engine/components/sprite.hpp"
 #include "seal/engine/components/transform.hpp"
-#include "seal/engine/engine.hpp"
 #include "seal/engine/ecs/entity.hpp"
 #include "seal/engine/ecs/system.hpp"
+#include "seal/engine/engine.hpp"
 #include "seal/engine/systems/all.hpp"
-
 
 seal::result<void> initialize_engine()
 {
@@ -38,6 +38,8 @@ seal::result<void> invoke_main()
 
 	auto engine = seal::engine::create();
 	seal_verify_result(engine);
+
+	seal::api::update_resolution(window->resolution());
 
 	while(!window->should_close()) {
 		engine->tick(0);

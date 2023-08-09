@@ -26,7 +26,7 @@ namespace seal {
 		// all.
 		auto view = buffer->view_as<u32>();
 		std::generate(view.begin(), view.end(), [n = 0]() mutable {
-			constexpr static u32 OFFSETS[] = { 0, 1, 2, 0, 3, 2 };
+			constexpr static u32 OFFSETS[] = { 0, 1, 2, 2, 3, 1 };
 
 			// A quick explaination for the math here:
 			// - (current / 6) << 2 = This is used to find the first vertex in quad.
@@ -43,5 +43,9 @@ namespace seal {
 
 	void batch::publish(size_t vertecies) const {
 		api::publish_batch(m_Batcher, vertecies);
+	}
+
+	result<void> batch::link_with_pipeline(pipeline& pipeline) {
+		return api::bind_batcher_to_pipeline(m_Batcher, pipeline);
 	}
 }

@@ -11,7 +11,6 @@
 
 #include "context.h"
 
-#include "seal/engine/systems/all.hpp"
 
 using namespace seal;
 
@@ -38,15 +37,9 @@ int main()
 	auto engine = seal::engine::create();
 	seal_verify_result(engine);
 
+	seal::api::update_resolution({ 1200, 700 });
+
 	ctx.engine = std::move(*engine);
-	
-	/*ctx.pipeline = pipeline::create_graphics(api::pipeline_description::graphics{
-												 load_resource(R"(::\Vertex.glsl)")
-													 .except("Failed to load vertex shader"),
-												 load_resource(R"(::\Fragment.glsl)")
-													 .except("Failed to load fragment shader"),
-											 })
-					   .except("Failed to create pipeline");*/
 
 	emscripten_set_main_loop(mainloop, 0, true);
 

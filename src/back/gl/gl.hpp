@@ -60,6 +60,7 @@ namespace seal::gl {
 	inline auto fail(const GLenum err)
 	{
 		const auto message = failure_message(err);
+		seal::log::error("GL Error: {}", message);
 		return ::seal::failure("GL failure: {}", message);
 	}
 
