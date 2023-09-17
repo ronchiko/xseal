@@ -60,7 +60,7 @@ void seal::gl::vao_context::bind(const shader_attribute_location location)
 			bind<glm::vec<matrix::width, matrix_element, matrix::qualifier>>(location + n);
 		}
 		
-		return {};
+		return;
 	} else if constexpr(seal::is_vector_v<StructureT>) {
 		using vec = seal::vector_traits<StructureT>;
 		constexpr static auto size = vec::size;

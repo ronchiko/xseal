@@ -25,7 +25,7 @@ namespace seal::gl {
 		   \param resource: The resource to create the shader from
 		   \param type: The type of the shader
 		 */
-		static shader from_resource(resource resource, type type);
+		static shader from_resource(const resource& resource, type type);
 
 		[[nodiscard]]
 		constexpr GLuint id() const {
@@ -33,7 +33,7 @@ namespace seal::gl {
 		}
 
 	private:
-		explicit inline shader(gl_id id) noexcept
+		explicit shader(gl_id id) noexcept
 			: m_Id(std::move(id))
 		{}
 

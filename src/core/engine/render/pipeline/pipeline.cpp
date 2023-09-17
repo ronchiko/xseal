@@ -34,9 +34,9 @@ namespace seal {
 					}
 				};
 
-				auto stages = stages_array | std::views::transform(create_pipeline) |
-							  ranges::move_to<std::vector>();
-				return std::make_shared<pipeline>(pipeline_type, std::move(stages));
+				auto stages = stages_array | std::views::transform(create_pipeline);
+				return std::make_shared<pipeline>(pipeline_type,
+												  std::vector(stages.begin(), stages.end()));
 			}
 
 		private:
@@ -51,10 +51,13 @@ namespace seal {
 				const auto& fragment = j["fragment"].get<std::string>();
 
 				const auto& uniforms_object = j["uniforms"];
-				auto uniforms = uniforms_object.items() | std::views::transform([&](const auto& u) {
-									return create_uniform_object(u.key(), u.value());
-								}) |
-								ranges::move_to<std::vector>();
+				std::vector<api::uniform_declaration_options> uniforms;
+				std::transform(uniforms_object.items().begin(),
+							   uniforms_object.items().end(),
+							   std::back_inserter(uniforms),
+							   [&](const auto& u) {
+								   return create_uniform_object(u.key(), u.value());
+							   });
 
 				api::pipeline_stage_creation_options::graphics graphics{
 					load_resource(vertex),
@@ -92,7 +95,7 @@ namespace seal {
 													const nlohmann::json& j)
 			{
 				switch(kind) {
-				case api::uniform_kind::Texture2d:	// BUG: What we do here?
+				case api::uniform_kind::Texture2d: // BUG: What we do here?
 					return 0u;
 				}
 

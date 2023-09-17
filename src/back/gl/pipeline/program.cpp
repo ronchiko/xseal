@@ -87,6 +87,7 @@ namespace seal::gl {
 		if(m_Uniforms.end() == result) {
 			throw failure("No uniform named {}", uniform_name);
 		}
+
 		return api::uniform_query_information{
 			static_cast<u32>(std::distance(m_Uniforms.begin(), result)), result->kind
 		};
@@ -143,7 +144,7 @@ namespace seal::gl {
 		for(const auto& uniform : uniforms) {
 			const u32 location = glGetUniformLocation(m_Id, uniform.uniform_name.c_str());
 			if(location == INVALID_UNIFORM_LOCATION) {
-				seal::log::error("GL: Failed to uniform named {}", uniform.uniform_name);
+				seal::log::error("GL: Failed to bind named uniform: {}", uniform.uniform_name);
 				throw seal::gl::fail();
 			}
 

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "seal/defenitions.h"
+
 #include "gl.hpp"
 
 namespace seal::gl {
@@ -8,7 +10,7 @@ namespace seal::gl {
 		template<GLbitfield Flags>
 		struct buffer_mapper
 		{
-			void * operator()(const GLenum type, const size_t start, const size_t offset) const
+			void *operator()(const GLenum type, const size_t start, const size_t offset) const
 			{
 				void *mapped_address = seal_gl_verify(glMapBufferRange(type, start, offset, Flags));
 				return mapped_address;
@@ -54,7 +56,9 @@ namespace seal::gl {
 
 			seal_mute_exceptions({
 				UnMapperT unmapper;
-				if(!unmapper(m_Data, m_Type)) {
+				try {
+					unmapper(m_Data, m_Type);
+				} catch(...) {
 					seal::log::warning("Failed to unmap buffer");
 				}
 			});

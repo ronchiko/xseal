@@ -4,6 +4,7 @@
 #include <unordered_map>
 
 #include "failure.hpp"
+#include "ranges/bindings.hpp"
 #include "seal/types/traits/template.hpp"
 
 namespace seal {
@@ -55,7 +56,7 @@ namespace seal {
 	template<typename ValueT>
 	ValueT convert_lowercase(std::string lookup)
 	{
-		std::ranges::transform(lookup, [](const auto& c) { return std::tolower(c); });
+		ranges::transform(lookup, [](const auto& c) { return std::tolower(c); });
 		return convert<ValueT>(lookup);
 	}
 }

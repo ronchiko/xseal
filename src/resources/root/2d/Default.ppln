@@ -5,7 +5,7 @@
 			"vertex": "::\\Vertex.glsl",
 			"fragment": "::\\Fragment.glsl",
 			"uniforms": {
-								"Texture": {
+				"Texture": {
 					"location": 0,
 					"type": "texture2d",
 					"value": "::\\EngineLogo.png"

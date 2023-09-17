@@ -28,6 +28,6 @@ namespace seal {
 
 		color tint = seal::WHITE;
 		resource_ref<pipeline> pipeline = R"(::\2d\Default.ppln)";
-		sprite_slice slice = { R"(::\EngineLogo.png)", seal::UNIT_RECT };
+		sprite_slice slice = { R"(::\EngineLogo.png)", {0, 0, 0.5f, 0.5f} };
 	};
 }

@@ -6,6 +6,7 @@
 
 #include "gl.hpp"
 #include "gl_id.hpp"
+#include "port/buffer_data.hpp"
 
 namespace seal::gl {
 	class buffer

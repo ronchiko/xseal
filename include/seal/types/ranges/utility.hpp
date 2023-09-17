@@ -56,7 +56,7 @@ namespace seal::ranges {
 			auto construct(Iterable&& iterable)
 			{
 				using iterator = decltype(iterable.begin());
-				using value_type = decltype(*iterable.begin());
+				
 
 				if constexpr(!has_iterator_category_type<iterator>) {
 					// If we dont have the iterator_category type, infer the category of our
@@ -72,9 +72,11 @@ namespace seal::ranges {
 			}
 
 			template<typename Iterator>
-			static auto construct_range(Iterator&& begin, Iterator&& end)
+			static auto construct_range(Iterator begin, Iterator end)
 			{
-				return Container(begin, end);
+				using value_type = decltype(*begin);
+
+				return Container<value_type>(begin, end);
 			}
 		};
 

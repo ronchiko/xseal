@@ -1,9 +1,9 @@
 #include "seal/engine/ecs/manager.hpp"
 
-#include <algorithm>
 #include <span>
 
 #include "seal/log/log.hpp"
+#include "seal/types/ranges/bindings.hpp"
 
 namespace seal::ecs::manager {
 
@@ -42,7 +42,7 @@ namespace seal::ecs::manager {
 
 			m_IsLocked = true;
 			// Sort the callbacks according to their priority
-			std::ranges::sort(m_Callbacks, [](const callback& first, const callback& second) {
+			ranges::sort(m_Callbacks, [](const callback& first, const callback& second) {
 				return first.priority > second.priority;
 			});
 		}

@@ -16,6 +16,15 @@ namespace seal::system {
 
 		sp.tint = seal::WHITE;
 
+		auto ent2 = seal::entity::create();
+		auto& sp2 = ent2.add<sprite>();
+		sp2.tint = seal::RED;
+		sp2.slice.rect = UNIT_RECT;
+
+		auto& trn = ent2.add<transform>();
+		trn.position.x = -1;
+
+
 		// auto re = sp.pipeline.acquire();
 		// seal_verify_result(re);
 
@@ -29,15 +38,20 @@ namespace seal::system {
 
 		// Place the sprites vertices.
 		// TODO: Enable multiple textures per pipeline!
-		range[queue.vertices_used++] = vertex{ transform.position, v2<f32>{ 0, 0 }, sprite.tint };
+		range[queue.vertices_used++] = vertex{ transform.position,
+											   v2<f32>{ sprite.slice.rect.x, sprite.slice.rect.y },
+											   sprite.tint };
 		range[queue.vertices_used++] = vertex{ transform.position + RIGHT,
-											   v2<f32>{ 1, 0 },
+											   v2<f32>{ sprite.slice.rect.x + sprite.slice.rect.z,
+														sprite.slice.rect.y },
 											   sprite.tint };
 		range[queue.vertices_used++] = vertex{ transform.position + UP,
-											   v2<f32>{ 0, 1 },
+											   v2<f32>{ sprite.slice.rect.x,
+														sprite.slice.rect.y + sprite.slice.rect.w },
 											   sprite.tint };
 		range[queue.vertices_used++] = vertex{ transform.position + UP + RIGHT,
-											   v2<f32>{ 1, 1 },
+											   v2<f32>{ sprite.slice.rect.x + sprite.slice.rect.z,
+														sprite.slice.rect.y + sprite.slice.rect.w },
 											   sprite.tint };
 	}
 
@@ -47,6 +61,7 @@ namespace seal::system {
 		for(auto& queue : m_Queues | std::views::values) {
 			// Publish the queue and reset the its count.
 			queue.pipeline->at(0).bind();
+
 			const u32 texture_index = queue.active_texture->bind();
 			queue.pipeline->at(0).update_uniform(queue.texture_location, texture_index);
 
@@ -104,11 +119,7 @@ namespace seal::system {
 
 
 		sprite_queue queue{
-			std::move(batch),
-			location,
-			sprite.slice.texture.co_own(),
-			0,
-			std::move(pipeline),
+			std::move(batch), location, sprite.slice.texture.co_own(), 0, std::move(pipeline),
 		};
 
 		queue.batch.link_with_pipeline(queue.pipeline->at(0));

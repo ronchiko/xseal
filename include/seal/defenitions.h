@@ -17,21 +17,13 @@
 #define seal_force_inline
 #endif
 
-#if SEAL_ENABLE_EXCEPTIONS
 
 #define seal_mute_exceptions(...)                                                                  \
 	try {                                                                                          \
-		__VA_ARGS__;                                                                             \
+		__VA_ARGS__;                                                                               \
 	} catch(const std::exception& err) {                                                           \
 		seal::log::error("Exception: {}", err.what());                                             \
 	} catch(...) {}
-
-#else
-#define seal_mute_exceptions(...)                                                                 \
-	{                                                                                              \
-		(__VA_ARGS__)                                                                                       \
-	}
-#endif
 
 
 #define seal_no_move(cls)                                                                          \

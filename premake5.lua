@@ -49,7 +49,7 @@ workspace "XSeal"
         runtime "Release"
 
     filter {"platforms:Windows"}
-        defines { "SEAL_WINDOWS", "SEAL_ENABLE_EXCEPTIONS", "SEAL_GL4" }
+        defines { "SEAL_WINDOWS", "SEAL_GL4" }
         system "Windows"
         architecture "x64"
         startproject "seal_glfw"

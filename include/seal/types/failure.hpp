@@ -65,7 +65,7 @@ namespace seal {
 		\param message [optional]: The message to add with the failure.
 	*/
 	template<failure::fail_type Type>
-	constexpr seal::failure fail(std::optional<std::string> message = std::nullopt)
+	seal::failure fail(std::optional<std::string> message = std::nullopt)
 	{
 		return seal::failure(message.has_value() ? std::move(message.value()) : "", Type);
 	}

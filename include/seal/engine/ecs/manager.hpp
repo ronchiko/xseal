@@ -12,6 +12,8 @@ namespace seal::ecs::manager {
 	class system
 	{
 	public:
+		static inline std::vector<detail::system_interface> g_Systems = {};
+
 		/**
 			Adds a new system with initialization arguments
 
@@ -26,6 +28,7 @@ namespace seal::ecs::manager {
 
 			return system{ (g_Systems.end() - 1)->instance() };
 		}
+
 		/**
 		   Adds an update listener for this system.
 
@@ -34,14 +37,10 @@ namespace seal::ecs::manager {
 		 */
 		void update_listener(const system_function& listener, u32 priority) const;
 
-		void *instance() const;
+		[[nodiscard]] void *instance() const;
 
 	private:
-		friend class engine;
-
-		static inline std::vector<detail::system_interface> g_Systems = {};
-
-		explicit system(void* instance)
+		explicit system(void *instance)
 			: m_System(instance)
 		{}
 

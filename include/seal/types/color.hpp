@@ -58,4 +58,10 @@ namespace seal {
 	   The color black.
 	 */
 	constexpr auto BLACK = color::rgb(color::CHANNEL_MIN, color::CHANNEL_MIN, color::CHANNEL_MIN);
+
+	/**
+		The color RED
+	 */
+	constexpr auto RED = color::rgb(color::CHANNEL_MAX, color::CHANNEL_MIN, color::CHANNEL_MIN);
+
 }

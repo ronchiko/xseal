@@ -36,7 +36,7 @@ namespace seal {
 			// Put values inside the index buffer, since for triangular batches it should not change
 			// at all.
 			auto view = buffer.view_as<u32>();
-			std::ranges::generate(view, [n = 0]() mutable {
+			ranges::generate(view, [n = 0]() mutable {
 				constexpr static u32 offsets[] = { 0, 1, 2, 2, 3, 1 };
 
 				// A quick explanation for the math here:
