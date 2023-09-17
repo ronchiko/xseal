@@ -20,12 +20,11 @@ namespace seal::gl {
 		/**
 		   Load the buffers content into memory.
 		 */
-		result<void> load()
+		void load()
 		{
 			if(nullptr == m_Memory) {
 				m_Memory = std::unique_ptr<ElementT[]>(new ElementT[m_Buffer.size_in<ElementT>()]);
 			}
-			return {};
 		}
 
 		/**
@@ -44,30 +43,26 @@ namespace seal::gl {
 		{
 			// Nothing to upload.
 			if(nullptr == m_Memory) {
-				seal::log::error("Attempted to upload a non allocated buffer");
+				log::error("Attempted to upload a non allocated buffer");
 				return;
 			}
 
 			// Rewrite the memory to the buffer.
-			auto write_result = m_Buffer.write(0,
-											   std::span{ m_Memory.get(),
-														  m_Buffer.size_in<ElementT>() });
-			if(!write_result) {
-				seal::log::warning("Failed to write to gl buffer {}: {}", m_Buffer, write_result.error().what());
-				return;
+			try {
+				m_Buffer.write(0, std::span{ m_Memory.get(), m_Buffer.size_in<ElementT>() });
+			} catch(const std::exception& ex) {
+				log::warning("Failed to write to gl buffer {}: {}", m_Buffer, ex.what());
 			}
 		}
 
-		result<std::span<ElementT>> read()
+		std::span<ElementT> read()
 		{
 			if(nullptr == m_Memory) {
-				seal::log::error("Attempted to read into non allocated buffer");
-				return seal::failure("Attempted to read into non allocated buffer");
+				log::error("Attempted to read into non allocated buffer");
+				throw failure("Attempted to read into non allocated buffer");
 			}
 
-			seal_verify_result(m_Buffer.read_into<ElementT>(0,
-															m_Buffer.size_in<ElementT>(),
-															m_Memory.get()));
+			m_Buffer.read_into<ElementT>(0, m_Buffer.size_in<ElementT>(), m_Memory.get());
 			return view();
 		}
 
@@ -86,7 +81,8 @@ namespace seal::gl {
 			return { m_Memory.get(), m_Buffer.size_in<ElementT>() };
 		}
 
-		void flush() {
+		void flush()
+		{
 			// If we have something to flush, then flush it.
 			if(nullptr != m_Memory) {
 				write();

@@ -1,10 +1,8 @@
 #pragma once
 
-#include "seal/types/result.hpp"
 
 #include "gl.hpp"
 #include "gl_id.hpp"
-#include "port/shader_information.hpp"
 
 namespace seal::gl {
 
@@ -12,14 +10,14 @@ namespace seal::gl {
 	class vertex_array
 	{
 	public:
-		// In GLES 2 vertex array are no supported.
+		// In GL ES 2 vertex array are no supported.
 
 		explicit vertex_array() = default;
 
 		/**
 		   Creates a new vertex array object.
 		 */
-		static result<vertex_array> create_vertex_array();
+		static vertex_array create_vertex_array();
 
 		/**
 		   Binds this VAO.
@@ -43,7 +41,7 @@ namespace seal::gl {
 		/**
 		   Creates a new vertex array object.
 		 */
-		static result<vertex_array> create_vertex_array();
+		static vertex_array create_vertex_array();
 
 		/**
 		   Binds this VAO.
@@ -52,16 +50,16 @@ namespace seal::gl {
 
 		/**
 		   The id of this vao.
-		  
-		   \return 
+
+		   \return
 		 */
-		constexpr GLuint id() const
+		[[nodiscard]] constexpr GLuint id() const
 		{
 			return m_Id;
 		}
 
 	private:
-		vertex_array(GLuint id);
+		explicit vertex_array(GLuint id);
 
 		gl_id m_Id;
 	};

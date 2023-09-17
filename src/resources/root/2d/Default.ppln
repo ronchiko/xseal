@@ -1,0 +1,16 @@
+{
+	"type": "graphics",
+	"stages": [
+		{
+			"vertex": "::\\Vertex.glsl",
+			"fragment": "::\\Fragment.glsl",
+			"uniforms": {
+								"Texture": {
+					"location": 0,
+					"type": "texture2d",
+					"value": "::\\EngineLogo.png"
+				}
+			}
+		}
+	]
+}

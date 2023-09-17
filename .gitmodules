@@ -34,3 +34,6 @@
 	path = thirdparty/json
 	url = https://github.com/nlohmann/json.git
 	branch = master
+[submodule "thirdparty/stb"]
+	path = thirdparty/stb
+	url = https://github.com/nothings/stb.git

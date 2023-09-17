@@ -2,118 +2,123 @@
 
 #include "seal/types/id_provider.hpp"
 
-static constexpr size_t VERTECIES_PER_BATCH = 4;
+static constexpr size_t VERTICES_PER_BATCH = 4096;
 
 namespace seal::system {
-	result<void> sprite_renderer::initialize()
+	using vertex = api::vertex;
+
+	void sprite_renderer::initialize()
 	{
+		m_Queues.clear();
+
 		auto ent = seal::entity::create();
 		auto& sp = ent.add<sprite>();
-		
+
 		sp.tint = seal::WHITE;
 
-		// auto re = sp.shader.acquire();
+		// auto re = sp.pipeline.acquire();
 		// seal_verify_result(re);
-		
+
 		ent.add<transform>();
-
-		return {};
 	}
 
-	result<void> sprite_renderer::update_once()
+	void sprite_renderer::update(entity entity, const transform& transform, const sprite& sprite)
 	{
-		return {};
+		auto& queue = acquire_queue(sprite);
+		auto [range, context] = queue.batch.lock<api::vertex>(api::batch_buffer_type::VertexBuffer);
+
+		// Place the sprites vertices.
+		// TODO: Enable multiple textures per pipeline!
+		range[queue.vertices_used++] = vertex{ transform.position, v2<f32>{ 0, 0 }, sprite.tint };
+		range[queue.vertices_used++] = vertex{ transform.position + RIGHT,
+											   v2<f32>{ 1, 0 },
+											   sprite.tint };
+		range[queue.vertices_used++] = vertex{ transform.position + UP,
+											   v2<f32>{ 0, 1 },
+											   sprite.tint };
+		range[queue.vertices_used++] = vertex{ transform.position + UP + RIGHT,
+											   v2<f32>{ 1, 1 },
+											   sprite.tint };
 	}
 
-	result<void> sprite_renderer::update(entity entity,
-										 const transform& transform,
-										 const sprite& sprite)
+	void sprite_renderer::update_last()
 	{
-		auto queue = acquire_queue(sprite);
-		seal_verify_result(queue);
-
-		auto is_ok = queue->batch.lock<api::vertex>(api::batch_buffer_type::VertexBuffer);
-		seal_verify_result(is_ok);
-
-		{
-			auto [range, context] = std::move(*is_ok);
-			
-			// Place the sprites vertecies.
-			range[queue->vertecies_used++] = api::vertex{ transform.position, v2<f32>{0, 0}, sprite.tint };
-			range[queue->vertecies_used++] = api::vertex{ transform.position + RIGHT, v2<f32>{1, 0}, sprite.tint };
-			range[queue->vertecies_used++] = api::vertex{ transform.position + UP, v2<f32>{0, 1}, sprite.tint };
-			range[queue->vertecies_used++] = api::vertex{ transform.position + UP + RIGHT, v2<f32>{1, 1}, sprite.tint };
-		}
-
-		return {};
-	}
-
-	result<void> sprite_renderer::update_last() {
 		// Publish all the queues
-		for(auto& [_, queue] : m_Queues) {
+		for(auto& queue : m_Queues | std::views::values) {
 			// Publish the queue and reset the its count.
-			queue.pipeline->bind();
+			queue.pipeline->at(0).bind();
+			const u32 texture_index = queue.active_texture->bind();
+			queue.pipeline->at(0).update_uniform(queue.texture_location, texture_index);
 
-			queue.batch.publish((queue.vertecies_used >> 2) * 6);
-			queue.vertecies_used = 0;
+			queue.batch.publish((queue.vertices_used >> 2) * 6);
+			queue.vertices_used = 0;
+
+			api::clear_bound_textures();
 		}
-
-		return {};
 	}
 
-	result<sprite_renderer::sprite_queue&> sprite_renderer::acquire_queue(const sprite& sprite)
+	sprite_renderer::sprite_queue& sprite_renderer::acquire_queue(const sprite& sprite)
 	{
-		auto sprite_pipline = sprite.shader.acquire();
-		seal_verify_result(sprite_pipline);
+		// The ID of a pipeline is its address in memory...
+		auto& pipeline = sprite.pipeline.acquire();
+		const auto uuid = reinterpret_cast<uintptr_t>(&pipeline);
 
-		auto& pipeline = *sprite_pipline;
-		auto uuid = reinterpret_cast<uintptr_t>(&pipeline);
-
-		// Check if we even have batches that support our pipeline?
-		auto iter = m_Queues.equal_range(uuid);
-		if(iter.first == iter.second) {
+		// Find all the queues that can fit our sprite.
+		const auto [begin, end] = m_Queues.equal_range(uuid);
+		if(begin == end) {
+			// We haven't found anything.
 			return create_queue_for_sprite(sprite, uuid);
 		}
 
-		// After we have all the possible suitable batches, find one that available.
-		auto suitable = std::find_if(iter.first, iter.second, [](const auto& queue) {
-			return queue.second.is_available();
-		});
-		// iter.second is the end
-		if(iter.second == suitable) {
+		// Search the queue for a queue that is both available and has the correct bound texture.
+		const auto does_queue_match_sprite = [&sprite](const sprite_queue& queue) {
+			return queue.is_available(); // &&*queue.active_texture == sprite.slice.texture.acquire();
+		};
+
+		const auto range = std::ranges::subrange(begin, end) | std::views::values;
+		const auto iterator = std::ranges::find_if(range, does_queue_match_sprite);
+
+		if(std::end(range) == iterator) {
 			// We found no available queues, allocate a new one
 			return create_queue_for_sprite(sprite, uuid);
 		}
 
 		// We found a queue :)
-		return std::ref(suitable->second);
+		return std::ref(*iterator);
 	}
 
-	// clang-format off
-	seal::result<sprite_renderer::sprite_queue&> sprite_renderer::create_queue_for_sprite(
-		const sprite& sprite, 
-		uintptr_t uuid)
-	{ // clang-format on
+	sprite_renderer::sprite_queue& sprite_renderer::create_queue_for_sprite(const sprite& sprite,
+																			uintptr_t uuid)
+	{
+		auto pipeline = sprite.pipeline.co_own();
+		if(pipeline->count_stages() > 1) {
+			throw seal::failure("Sprite renderer only supports pipelines with a single stage.");
+		}
 
-		auto batch = seal::batch::createTriangular(VERTECIES_PER_BATCH, true);
-		seal_verify_result(batch);
+		const auto [location, type] = pipeline->at(0).query_uniform("Texture");
+		if(api::uniform_kind::Texture2d != type) {
+			throw failure("Pipeline doesn't have a 'Texture' uniform that is a texture.");
+		}
+
+		auto batch = batch::create_triangular(VERTICES_PER_BATCH, true);
+
 
 		sprite_queue queue{
-			*batch,
+			std::move(batch),
+			location,
+			sprite.slice.texture.co_own(),
 			0,
-			sprite.shader.co_own(),
+			std::move(pipeline),
 		};
 
-		auto pipeline = sprite.shader.acquire();
-		seal_verify_result(pipeline);
+		queue.batch.link_with_pipeline(queue.pipeline->at(0));
 
-		seal_verify_result(batch->link_with_pipeline(*pipeline));
-
-		return std::ref(m_Queues.emplace(std::make_pair(uuid, std::move(queue)))->second);
+		return m_Queues.emplace(std::make_pair(uuid, std::move(queue)))->second;
 	}
 
-	bool sprite_renderer::sprite_queue::is_available() const {
-		// We account for the fact that we require 4 vertecies for a sprite.
-		return vertecies_used + 4 <= VERTECIES_PER_BATCH;
+	bool sprite_renderer::sprite_queue::is_available() const
+	{
+		// We account for the fact that we require 4 vertices for a sprite.
+		return vertices_used + 4 <= VERTICES_PER_BATCH;
 	}
 }

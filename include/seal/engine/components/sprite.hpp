@@ -2,10 +2,16 @@
 
 #include "seal/types/color.hpp"
 
+#include "seal/engine/render/pipeline/pipeline.hpp"
+#include "seal/engine/render/texture2d.hpp"
 #include "seal/engine/resource.hpp"
 
 namespace seal {
-	class pipeline;
+	struct sprite_slice
+	{
+		resource_ref<texture2d> texture = R"(::\EngineLogo.png)";
+		v4<f32> rect = seal::UNIT_RECT;
+	};
 
 	struct sprite
 	{
@@ -21,6 +27,7 @@ namespace seal {
 		};
 
 		color tint = seal::WHITE;
-		resource_ref<pipeline> shader = R"(::\SpritePipeline.json)";
+		resource_ref<pipeline> pipeline = R"(::\2d\Default.ppln)";
+		sprite_slice slice = { R"(::\EngineLogo.png)", seal::UNIT_RECT };
 	};
 }

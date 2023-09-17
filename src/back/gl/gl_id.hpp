@@ -13,24 +13,25 @@ namespace seal::gl {
 	{
 	public:
 #ifdef SEAL_WEBGL
-		using deletor = void GLAD_API_PTR (GLuint id);
+		using deleter_t = void GLAD_API_PTR (GLuint id);
 #else
-		using deletor = void (GLAPIENTRY)(GLuint id);
+		using deleter_t = void (GLAPIENTRY)(GLuint id);
 #endif
 		constexpr gl_id() noexcept
 			: gl_id(INVALID_ID)
 		{}
 
-		constexpr gl_id(GLuint id, deletor *del = nullptr) noexcept
+		constexpr gl_id(GLuint id, deleter_t *del = nullptr) noexcept
 			: m_Id(id)
-			, m_Deletor(del)
+			, m_Deleter(del)
 		{}
 
-		seal_no_copy(gl_id);
+		gl_id(const gl_id&) = delete;
+		gl_id& operator=(const gl_id&) = delete;
 
 		constexpr gl_id(gl_id&& other) noexcept
 			: m_Id(other.m_Id)
-			, m_Deletor(other.m_Deletor)
+			, m_Deleter(other.m_Deleter)
 		{
 			other.m_Id = INVALID_ID;
 		}
@@ -39,7 +40,7 @@ namespace seal::gl {
 		{
 			seal_mute_exceptions({
 				other.m_Id = std::exchange(m_Id, other.m_Id);
-				other.m_Deletor = std::exchange(m_Deletor, other.m_Deletor);
+				other.m_Deleter = std::exchange(m_Deleter, other.m_Deleter);
 			});
 
 			return *this;
@@ -60,14 +61,14 @@ namespace seal::gl {
 		void release() noexcept
 		{
 			seal_mute_exceptions({
-				if(m_Deletor && INVALID_ID != m_Id) {
-					m_Deletor(m_Id);
+				if(m_Deleter && INVALID_ID != m_Id) {
+					m_Deleter(m_Id);
 				}
 				m_Id = INVALID_ID;
 			});
 		}
 
-		deletor *m_Deletor;
 		GLuint m_Id;
+		deleter_t *m_Deleter;
 	};
 }

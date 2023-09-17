@@ -5,25 +5,30 @@
 #include "gl.hpp"
 
 namespace seal::api {
-	result<void> initialize_backend()
+	void initialize_backend()
 	{
 #ifdef SEAL_WEBGL
 		if (0 == gladLoadGLES2(glfwGetProcAddress)) {
-			return seal::failure("Failed to load OpenGL");
+			throw seal::failure("Failed to load OpenGL");
 		}
 #else
 		if(0 == gladLoadGL()) {
-			return seal::failure("Failed to load OpenGL");
+			throw seal::failure("Failed to load OpenGL");
 		}
 #endif
 
-		return {};
+		// Load some general information variables
+		glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &gl::specs::max_textures_per_fragment);
+		glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &gl::specs::max_textures_combined);
+
+		seal::log::info("GL Version: {}", gl::get_string(GL_VERSION));
+		seal::log::info("GL Vendor: {}", gl::get_string(GL_VENDOR));
+		seal::log::info("GL Renderer: {}", gl::get_string(GL_RENDERER));
+
 	}
 
-	result<void> update_resolution(const v2<u32>& resolution) {
+	void update_resolution(const v2<u32>& resolution) {
 		glViewport(0, 0, resolution.x, resolution.y);
-
-		return {};
 	}
 
 }

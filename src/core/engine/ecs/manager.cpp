@@ -1,11 +1,9 @@
 #include "seal/engine/ecs/manager.hpp"
 
-#include <span>
-#include <memory>
 #include <algorithm>
+#include <span>
 
 #include "seal/log/log.hpp"
-#include "seal/engine/ecs/system/system_interface.hpp"
 
 namespace seal::ecs::manager {
 
@@ -14,64 +12,69 @@ namespace seal::ecs::manager {
 		u32 priority;
 
 		void *system;
-		manager::system_function function;
+		system_function function;
 	};
 
 	struct callback_manager
 	{
 	public:
-		std::span<callback> view() {
+		std::span<callback> view()
+		{
 			return std::span{ m_Callbacks };
 		}
 
-		void insert(const callback& callback) {
+		void insert(const callback& callback)
+		{
 			if(m_IsLocked) {
-				seal::log::error("Attemping to insert a callback after locking the manager.");
+				log::error("Attempting to insert a callback after locking the manager.");
 				return;
 			}
 
 			m_Callbacks.push_back(callback);
 		}
 
-		void lock() {
+		void lock()
+		{
 			if(m_IsLocked) {
-				seal::log::warning("Attempted lock of the manager after it was locked");
+				log::warning("Attempted lock of the manager when its already locked");
 				return;
 			}
-			
+
 			m_IsLocked = true;
 			// Sort the callbacks according to their priority
-			std::sort(m_Callbacks.begin(),
-					  m_Callbacks.end(),
-					  [](const callback& first, const callback& second) {
-						  return first.priority > second.priority;
-					  });
+			std::ranges::sort(m_Callbacks, [](const callback& first, const callback& second) {
+				return first.priority > second.priority;
+			});
 		}
 
 	private:
-		bool m_IsLocked;
+		// After a we finished initializing the engine the callback manager shouldn't change.
+		bool m_IsLocked = false;
 		std::vector<callback> m_Callbacks;
 	};
 
-	static callback_manager s_Callbacks;
-
-	void system::update_listener(manager::system_function func, u32 priority)
-	{
-		s_Callbacks.insert(callback{ priority, m_System, func });
+	namespace {
+		callback_manager g_Callbacks;
 	}
 
-	void *system::instance()
+	void system::update_listener(const system_function& listener, const u32 priority) const
+	{
+		g_Callbacks.insert(callback{ priority, m_System, listener });
+	}
+
+	void *system::instance() const
 	{
 		return m_System;
 	}
 
-	void lock() {
-		s_Callbacks.lock();
+	void lock()
+	{
+		g_Callbacks.lock();
 	}
 
-	void tick(float deltaTime)
+	void tick(const float delta_time)
 	{
-		for (const auto& listener : s_Callbacks.view()) {
+		for(const auto& listener : g_Callbacks.view()) {
 			listener.function(listener.system);
 		}
 	}

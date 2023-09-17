@@ -1,12 +1,15 @@
 #include "objects/buffer.hpp"
 
 namespace seal::gl {
-	static void _glDeleteBuffer(GLuint buffer)
-	{
-		glDeleteBuffers(1, &buffer);
+	namespace {
+		void gl_delete_buffer(const GLuint buffer)
+		{
+			glDeleteBuffers(1, &buffer);
+		}
 	}
 
-	result<buffer> buffer::create_buffer(type type, usage usage, size_t size) {
+	buffer buffer::create_buffer(type type, usage usage, const size_t size)
+	{
 		GLuint buffer_id = 0;
 
 		seal_gl_verify(glGenBuffers(1, &buffer_id));
@@ -27,8 +30,8 @@ namespace seal::gl {
 		glBindBuffer(static_cast<GLenum>(m_Type), m_BufferId);
 	}
 
-	buffer::buffer(GLuint id, type type, size_t size) 
-		: m_BufferId(id, _glDeleteBuffer)
+	buffer::buffer(const GLuint id, const type type, const size_t size)
+		: m_BufferId(id, gl_delete_buffer)
 		, m_Type(type)
 		, m_Size(size)
 	{}

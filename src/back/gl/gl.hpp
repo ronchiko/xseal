@@ -20,16 +20,18 @@
 #include "seal/types/result.hpp"
 
 namespace seal::gl {
-	inline GLenum last_err() {
+	inline GLenum last_err()
+	{
 		return glGetError();
 	}
 
 	/**
 	   Given a GL error return the failure message associated with it.
-	  
+
 	   \param err: The error value of get the message of.
 	 */
-	inline std::string failure_message(const GLenum err) {
+	inline std::string failure_message(const GLenum err)
+	{
 		const static std::unordered_map<GLenum, std::string> ERROR_MESSAGES = {
 			{ GL_INVALID_ENUM, "Invalid enum provided." },
 			{ GL_INVALID_VALUE, "Invalid value provided." },
@@ -54,7 +56,7 @@ namespace seal::gl {
 
 	/**
 	   Returns a failure according to a gl error.
-	  
+
 	   \param err: The gl error to create the failure from
 	 */
 	inline auto fail(const GLenum err)
@@ -67,13 +69,23 @@ namespace seal::gl {
 	/**
 	   Creates a failure from the most recent gl error.
 	 */
-	inline auto fail() {
+	inline auto fail()
+	{
 		return fail(last_err());
+	}
+
+	inline const char* get_string(GLenum _enum) {
+		return reinterpret_cast<const char *>(glGetString(_enum));
+	}
+
+	namespace specs {
+		inline i32 max_textures_per_fragment = 0;
+		inline i32 max_textures_combined = 0;
 	}
 }
 
 #define seal_gl_verify(expr)                                                                       \
 	expr;                                                                                          \
 	if(auto err = glGetError(); GL_NO_ERROR != err) {                                              \
-		return ::seal::gl::fail(err);                                                              \
+		throw ::seal::gl::fail(err);                                                               \
 	}

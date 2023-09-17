@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdlib>
+#include <unordered_map>
 
 #include "seal/opt/align_alloc.hpp"
 #include "seal/types.hpp"
@@ -19,13 +20,13 @@ namespace seal {
 	class paged_storage
 	{
 	public:
+		paged_storage() = default;
 
-		using element_t = StoreT;
+		paged_storage(paged_storage&&) = delete;
+		paged_storage& operator=(paged_storage&&) = delete;
 
-		explicit paged_storage() = default;
-
-		paged_storage(paged_storage&&) noexcept;
-		paged_storage& operator=(paged_storage&&) noexcept;
+		paged_storage(const paged_storage&) = delete;
+		paged_storage& operator=(const paged_storage&) = delete;
 
 		~paged_storage();
 
@@ -36,6 +37,12 @@ namespace seal {
 		   \return: An immovable reference to the stored object.
 		 */
 		StoreT& store(StoreT value);
+
+		template<typename... ArgTs>
+		StoreT& emplace(ArgTs&&...arguments)
+		{
+			return store(StoreT(std::forward<ArgTs>(arguments)...));
+		}
 
 		/**
 		   Erases an object from the storage.
@@ -50,217 +57,90 @@ namespace seal {
 
 		   \param value: The value to disown.
 		 */
-		StoreT&& disown(StoreT& value);
+		StoreT disown(StoreT& value);
 
 	private:
-		inline static constexpr u32 PAGE_MAGIC = 0xDEADBEEF;
-
-#pragma pack(push, 1)
-
-		struct secure_t
+		struct node_t
 		{
-			bool active = false;
-			StoreT value = {};
+			node_t *previous = nullptr;
+			node_t *next = nullptr;
+			StoreT element;
 		};
 
-		inline static constexpr size_t PAGE_DATA_SIZE = std::bit_ceil(PageSize); // Round up the page
-																			// size to a power of 2
-		inline static constexpr size_t VALUES_IN_PAGE = PAGE_DATA_SIZE / sizeof(secure_t);
-
-		union page_data_t
-		{
-			u8 bytes[PAGE_DATA_SIZE];
-			secure_t storage[1];
-
-			page_data_t()
-				: bytes{0}
-			{}
-
-			~page_data_t() {}
-		};
-
-		struct page_t
-		{
-			u32 magic;
-
-			aligned<page_t> next = nullptr;
-
-			size_t used = 0;
-			page_data_t data;
-
-			page_t() = default;
-
-			~page_t() {
-				for (size_t i = 0; i < used; ++i) {
-					if (data.storage[i].active) {
-						std::destroy_at(&data.storage[i].value);
-					}
-				}
-			}
-		};
-
-#pragma pack(pop)
-
 		/**
-		   Release the memory this storage owns.
+		   Gets a node from a value.
+
+		   \param value: The value to retreive to node for.
 		 */
-		void release() noexcept;
+		node_t *retreive_node(void *value);
 
-		/**
-		   Emplaces a new page in front of the current head.
-
-		   \return: The newlt allocated head.
-		 */
-		void emplace_head();
-
-		/**
-		   Gets the secure_t of a StoreT.
-
-		   \param value: The value to get the secure_t
-		 */
-		secure_t& to_secure_refrence(StoreT& value);
-
-		/**
-		   Finds an inactive secture value in the storage.
-		 */
-		secure_t& find_secure_value();
-
-		/**
-		   Allocates a new secure value in the paged storage.
-		 */
-		StoreT& allocate_secure_value();
-
-		seal_no_copy(paged_storage);
-
-		rotating_queue<std::uintptr_t> m_FreeSpots;
-		aligned<page_t> m_Head = nullptr;
+		node_t *m_Head = nullptr;
 	};
-}
-
-template<size_t PagedSize, typename StoreT>
-seal::paged_storage<PagedSize, StoreT>::paged_storage(paged_storage&& other) noexcept
-	: m_FreeSpots(std::move(other.m_FreeSpots))
-	, m_Head(other.m_Head)
-{
-	other.m_Head = nullptr;
-}
-
-template<size_t PagedSize, typename StoreT>
-seal::paged_storage<PagedSize, StoreT>& seal::paged_storage<PagedSize, StoreT>::
-operator=(paged_storage&& other) noexcept
-{
-	release();
-
-	std::exchange(m_FreeSpots, other.m_FreeSpots);
-	std::exchange(m_Head, other.m_Head);
-
-	return *this;
 }
 
 template<size_t PagedSize, typename StoreT>
 seal::paged_storage<PagedSize, StoreT>::~paged_storage()
 {
-	release();
+	while (nullptr != m_Head) {
+		auto *next = m_Head->next;
+		delete m_Head;
+		m_Head = next;
+	}
 }
 
 template<size_t PagedSize, typename StoreT>
 StoreT& seal::paged_storage<PagedSize, StoreT>::store(StoreT value)
 {
-	auto& secure_value = allocate_secure_value();
-	secure_value = std::move(value);
+	auto new_head = new node_t{ nullptr, nullptr, std::move(value) };
+	if(nullptr != m_Head) {
+		m_Head->previous = new_head;
+	}
 
-	return secure_value;
+	new_head->next = m_Head;
+	m_Head = new_head;
+
+	return m_Head->element;
 }
 
 template<size_t PagedSize, typename StoreT>
 void seal::paged_storage<PagedSize, StoreT>::erase(StoreT& value)
 {
 	// Disown the element to remove into this scope.
-	auto&& disword_value = disown(value);
-
-	// Destroy the disowned element ;)
-	std::destroy_at(&disword_value);
+	auto disword_value = disown(value);
 }
 
 template<size_t PagedSize, typename StoreT>
-StoreT&& seal::paged_storage<PagedSize, StoreT>::disown(StoreT& value)
+StoreT seal::paged_storage<PagedSize, StoreT>::disown(StoreT& value)
 {
-	// Locate the start of the page from the address.
-	const auto page_begin = seal::align_down(reinterpret_cast<std::uintptr_t>(&value),
-											 PAGE_DATA_SIZE);
-	auto *page = reinterpret_cast<page_t *>(page_begin);
+	auto *node_pointer = retreive_node(&value);
+	node_t *node = nullptr;
 
-	// Ensure we actually have a page.
-	seal_assert(PAGE_MAGIC == page->magic, "Value is not inside of a page!");
-
-	// Get the secure_t of the value
-	auto& secure = to_secure_refrence(value);
-	seal_wassert(secure.active, "Attempting to disown an erased value!");
-
-	// Mark the value as inactive.
-	secure.active = false;
-
-	// Register this empty spot.
-	m_FreeSpots.enqueue(reinterpret_cast<std::uintptr_t>(&secure));
-
-	// Move out the value inside the secure object.
-	return std::move(secure.value);
-}
-
-template<size_t PagedSize, typename StoreT>
-void seal::paged_storage<PagedSize, StoreT>::release() noexcept
-{
-	seal_mute_exceptions({});
-}
-
-template<size_t PagedSize, typename StoreT>
-void seal::paged_storage<PagedSize, StoreT>::emplace_head()
-{
-	aligned<page_t> new_head = aligned_alloc<page_t>(PAGE_DATA_SIZE);
-	new_head->magic = PAGE_MAGIC;
-	new_head->next = std::move(m_Head);
-
-	m_Head = std::move(new_head);
-}
-
-template<size_t PagedSize, typename StoreT>
-StoreT& seal::paged_storage<PagedSize, StoreT>::allocate_secure_value()
-{
-	auto& secure_value = find_secure_value();
-
-	seal_assert(!secure_value.active, "Attempting to allocate an active secure item");
-
-	secure_value.active = true;
-	return secure_value.value;
-}
-
-template<size_t PagedSize, typename StoreT>
-seal::paged_storage<PagedSize, StoreT>::secure_t& seal::paged_storage<PagedSize,
-																	  StoreT>::find_secure_value()
-{
-	// If we know of an empty slot someware in the storage, use it.
-	if(!m_FreeSpots.empty()) {
-		auto free_spot = m_FreeSpots.peek();
-		m_FreeSpots.dequeue();
-
-		return *reinterpret_cast<secure_t *>(free_spot);
+	// We take the ownership from the node that points to us.
+	if(nullptr != node_pointer->previous) {
+		if(node = node_pointer->previous->next) {
+			node->previous->next = node->next;
+		}
+	} else {
+		node = m_Head;
+		m_Head = node->next;
 	}
 
-	// If we are out values in the head page, allocate a new head page.
-	// Note that we also know there are no empty slots left.
-	if(!m_Head.is_valid() || m_Head->used >= VALUES_IN_PAGE) {
-		emplace_head();
+	if(nullptr != node->next) {
+		node->next->previous = node->previous;
 	}
 
-	// Acquire the first empty secure_t in the head.
-	return m_Head->data.storage[m_Head->used++];
+	auto owned_value = std::move(node->element);
+	delete node;
+
+	return owned_value;
 }
 
 template<size_t PagedSize, typename StoreT>
-seal::paged_storage<PagedSize, StoreT>::secure_t& seal::paged_storage<PagedSize, StoreT>::
-	to_secure_refrence(StoreT& value)
+seal::paged_storage<PagedSize, StoreT>::node_t *seal::paged_storage<PagedSize,
+																	StoreT>::retreive_node(void *value)
 {
-	auto *secure_value_start = reinterpret_cast<u8 *>(&value) - offsetof(secure_t, value);
+	auto *pointer = static_cast<u8 *>(value);
+	pointer -= offsetof(node_t, element);
 
-	return *reinterpret_cast<secure_t *>(secure_value_start);
+	return reinterpret_cast<node_t *>(pointer);
 }

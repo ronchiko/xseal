@@ -19,17 +19,17 @@
 
 #if SEAL_ENABLE_EXCEPTIONS
 
-#define seal_mute_exceptions(expr)                                                                 \
+#define seal_mute_exceptions(...)                                                                  \
 	try {                                                                                          \
-		expr                                                                                       \
+		__VA_ARGS__;                                                                             \
 	} catch(const std::exception& err) {                                                           \
 		seal::log::error("Exception: {}", err.what());                                             \
 	} catch(...) {}
 
 #else
-#define seal_mute_exceptions(expr)                                                                 \
+#define seal_mute_exceptions(...)                                                                 \
 	{                                                                                              \
-		expr                                                                                       \
+		(__VA_ARGS__)                                                                                       \
 	}
 #endif
 

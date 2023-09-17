@@ -1,10 +1,10 @@
 #pragma once
 
-#include <vector>
 #include <span>
+#include <string>
+#include <memory>
 
 #include "seal/types.hpp"
-#include "seal/types/result.hpp"
 
 namespace seal {
 	class resource_interface
@@ -17,7 +17,7 @@ namespace seal {
 		  
 		   \return: The loaded resource as a readonly span.
 		 */
-		virtual result<std::span<const u8>> load_all() = 0;
+		virtual std::span<const u8> load_all() = 0;
 
 		/**
 		   Loads an a part of the resource into a span.
@@ -25,7 +25,7 @@ namespace seal {
 		   \param span: The span to put the result into
 		   \returns: The amount of written to the input span
 		 */
-		virtual result<u32> load(std::span<u8> span) = 0;
+		virtual u32 load(std::span<u8> span) = 0;
 	};
 
 	/**
@@ -51,8 +51,8 @@ namespace seal {
 
 		~unique_resource() noexcept;
 
-		result<std::span<const u8>> load_all();
-		result<u32> load(std::span<u8> span);
+		std::span<const u8> load_all() const;
+		u32 load(std::span<u8> span) const;
 
 		/**
 		   The Id of the resource.
@@ -88,19 +88,20 @@ namespace seal {
 		Loads a resource.
 
 		\param path: The path to the resource.
-					 ::\<resource-path>	- Loads an embeded resource
+					 ::\<resource-path>	- Loads an embedded resource
 					 <package-name>::\<resource-path> - Loads a resource from an asset package
 					 anything else - Load resource from path
 	 */
-	result<resource> load_resource(const std::string& path);
+	resource load_resource(const std::string& path);
 
 	/**
 		Registers an embedded resource into.
 	 
+		\param path: The location of the resource
 		\param data: The contents of the resource
 		\param size: The size in bytes of data
 	 */
-	result<void> add_embedded_resource(std::string path, const void *data, size_t size);
+	void add_embedded_resource(std::string path, const void *data, size_t size);
 }
 
 #define EMBEDDED_RESOURCE(name) "::\\"##name

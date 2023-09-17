@@ -12,10 +12,9 @@ namespace seal::ems {
 	public:
 		static context& get();
 
-		seal::engine engine;
 		GLFWwindow *window;
 
 	private:
-		inline static std::unique_ptr<context> g_Context = nullptr;
+		inline static std::unique_ptr<context> s_Context = nullptr;
 	};
 }

@@ -3,7 +3,7 @@
 #include <entt/entt.hpp>
 
 #include "seal/types.hpp"
-#include "seal/types/result.hpp"
+#include "seal/types/failure.hpp"
 
 namespace seal {
 
@@ -43,17 +43,18 @@ namespace seal {
 			Erases components from this entity.
 		 */
 		template<typename... Components>
-		void erase();
+		void erase() const;
 
 		/**
 			Gets a component from this entity.
 		*/
 		template<typename... Components>
-		seal::result<std::tuple<std::remove_cvref_t<Components>&...>> get();
+		std::tuple<std::remove_cvref_t<Components>&...> get();
 		
 		/**
 		   The Id of this entity.
 		 */
+		[[nodiscard]]
 		constexpr entity_id id() const;
 
 		inline static entt::basic_registry<entity_id> g_Registry;
@@ -72,16 +73,17 @@ ComponentT& seal::entity::add(Args&&... args)
 }
 
 template<typename... Components>
-void seal::entity::erase() {
+void seal::entity::erase() const
+{
 	g_Registry.remove<Components...>(m_Id);
 }
 
 template<typename... Components>
-seal::result<std::tuple<std::remove_cvref_t<Components>&...>> seal::entity::get()
+std::tuple<std::remove_cvref_t<Components>&...> seal::entity::get()
 {
-	// Ensure the entity has all the compnents.
+	// Ensure the entity has all the components.
 	if (!g_Registry.all_of<std::remove_cvref_t<Components>...>(m_Id)) {
-		return seal::failure("Entity doesn't have all the components.");
+		throw seal::failure("Entity doesn't have all the components.");
 	}
 
 	return std::tie(g_Registry.get<Components>(m_Id)...);

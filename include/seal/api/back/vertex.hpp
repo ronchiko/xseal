@@ -3,30 +3,28 @@
 #include "seal/types.hpp"
 #include "seal/types/color.hpp"
 #include "seal/types/flags.hpp"
-#include "seal/types/result.hpp"
 
 #include "seal/api/buffer.hpp"
 #include "seal/api/tagged_object.hpp"
-
 
 namespace seal::api {
 #pragma pack(push, 1)
 
 	/**
-	   The structure of a vertex passed to a shader.
+	   The structure of a vertex passed to a pipeline.
 	 */
 	struct vertex
 	{
 		constexpr vertex() = default;
 
-		constexpr vertex(v3<f32> position, v2<f32> uv, color tint)
+		constexpr vertex(const v3<f32> position, const v2<f32> uv, const color tint)
 			: position(position)
-			// , uv(uv) TODO: When textures
+			, uv(uv)
 			, tint(tint)
 		{}
 
 		v3<f32> position = v3<f32>{ 0, 0, 0 };
-		// v2<f32> uv = v2<f32>{ 0, 0 }; TODO: When textures
+		v2<f32> uv = v2<f32>{ 0, 0 };
 		color tint = WHITE;
 	};
 
@@ -36,8 +34,8 @@ namespace seal::api {
 	{
 		None = 0,
 
-		KeepIndecies = bit(0),	 // Hints the batch should keep the indecies in memory
-		KeepVertecies = bit(1), // Hints the batch should keep the vertecies in memory
+		KeepIndices = bit(0),  // Hints the batch should keep the indices in memory
+		KeepVertices = bit(1), // Hints the batch should keep the vertices in memory
 	};
 
 	/**
@@ -45,8 +43,8 @@ namespace seal::api {
 	 */
 	struct batch_initialization
 	{
-		size_t vertecies;
-		size_t indecies;
+		size_t vertices;
+		size_t indices;
 
 		flags<batch_hint> hints{};
 	};
@@ -67,7 +65,7 @@ namespace seal::api {
 
 	   \returns: The id of the batch.
 	 */
-	result<abstract_t> create_batch(const batch_initialization& initialize);
+	abstract_t create_batch(const batch_initialization& initialize);
 
 	/**
 	   Frees a batch.
@@ -78,19 +76,20 @@ namespace seal::api {
 
 	/**
 	   Locks the memory associated with a batch, allowing reading and writing from it.
-	   Note: Locks dont stack! Doesn't matter how much you call this function, one unlock will unlock the buffer.
+	   Note: Locks don't stack! Doesn't matter how much you call this function, one unlock will
+	   unlock the buffer.
 
 	   \param batch: The the batch to lock the buffer from.
-	   \param type: The buffer indside the batch to lock.
+	   \param type: The buffer inside the batch to lock.
 	   \param read: Should read the data into the current buffer.
 
 	   \return The buffer type associated with the batch.
 	 */
-	result<buffer> lock_batch_buffer(abstract_t batch, batch_buffer_type type, bool read);
+	buffer lock_batch_buffer(abstract_t batch, batch_buffer_type type, bool read);
 
 	/**
 	   Unlocks the memory associated with a batch (locked with lock_batch_buffer).
-	   Note: Unlocking an unlocked buffer wont do anthing.
+	   Note: Unlocking an unlocked buffer wont do anything.
 
 	   \param batch: The batch the buffer was locked from.
 	   \param type: The type of buffer to unlock.
@@ -98,19 +97,19 @@ namespace seal::api {
 
 	   \return The result of the operation.
 	 */
-	result<void> unlock_batch_buffer(abstract_t batch, batch_buffer_type type, bool write);
+	void unlock_batch_buffer(abstract_t batch, batch_buffer_type type, bool write);
 
 	/**
-	   Binds a batcher to a pipline, generating the nessecary information for the binding.
+	   Binds a batch to a pipeline, generating the necessary information for the binding.
 
 	   \param batch: The batch to bind
-	   \param pipline: The pipeline to bind to
+	   \param pipeline: The pipeline to bind to
 	 */
-	result<void> bind_batcher_to_pipeline(abstract_t batch, abstract_t pipeline);
+	void bind_batch_to_pipeline(abstract_t batch, abstract_t pipeline);
 
 	/**
-	   Renderers a batch to the screen.
+	   Renders a batch to the screen.
 	 */
-	result<void> publish_batch(abstract_t batch, size_t vertecies);
+	void publish_batch(abstract_t batch, size_t vertices);
 
 }

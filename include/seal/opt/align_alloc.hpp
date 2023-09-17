@@ -1,6 +1,6 @@
 #pragma once
 
-#include "seal/debug.h"
+#include "seal/defenitions.h"
 #include "seal/panic.h"
 
 namespace seal {
@@ -11,14 +11,15 @@ namespace seal {
 	/**
 	   Allocates aligned memory.
 	  
-	   \param alignment: The aligment of the memory.
+	   \param alignment: The alignment of the memory.
+	   \param arguments: Constructor arguments for the type.
 	 
 		\note: Must free with aligned_free
 	 */
 	template<typename AllocT, typename... ArgumentsT>
-	AllocT *aligned_alloc(size_t alignment, ArgumentsT&&... arguments)
+	AllocT *aligned_alloc(const size_t alignment, ArgumentsT&&... arguments)
 	{
-		auto* aligned_block = reinterpret_cast<AllocT *>(aligned_alloc(alignment, sizeof(AllocT)));
+		auto* aligned_block = static_cast<AllocT *>(aligned_alloc(alignment, sizeof(AllocT)));
 		std::construct_at(aligned_block, arguments...);
 
 		return aligned_block;
@@ -69,13 +70,13 @@ constexpr seal::aligned<AllocT>::aligned()
 {}
 
 template<typename AllocT>
-constexpr seal::aligned<AllocT>::aligned(AllocT* alloc)
-	: m_Value(alloc)
+constexpr seal::aligned<AllocT>::aligned(AllocT* ptr)
+	: m_Value(ptr)
 {}
 
 template<typename AllocT>
 constexpr seal::aligned<AllocT>::aligned(aligned&& other) noexcept
-	: m_Value(other.alloc)
+	: m_Value(other.m_Value)
 {
 	other.m_Value = nullptr;
 }
@@ -92,7 +93,7 @@ seal::aligned<AllocT>& seal::aligned<AllocT>::operator=(aligned&& other) noexcep
 }
 
 template<typename AllocT>
-seal::aligned<AllocT>::~aligned()
+seal::aligned<AllocT>::aligned::~aligned()
 {
 	release();
 }

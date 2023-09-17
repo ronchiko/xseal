@@ -19,7 +19,7 @@ namespace seal::glfw {
 	}
 }
 
-#define seal_glfw_verfiy(expr)                                                                     \
+#define seal_glfw_verify(expr)                                                                     \
 	if(auto result = (expr); ::seal::error_value_v<decltype(result)> == result) {                  \
-		return ::seal::glfw::fail();                                                               \
+		throw ::seal::glfw::fail();                                                               \
 	}

@@ -12,17 +12,16 @@ namespace seal::gl {
 		GL_COMPUTE_SHADER,
 	};
 
-	result<shader> shader::from_resource(resource resource, type type)
+	shader shader::from_resource(resource resource, type type)
 	{
 		gl_id shader = { glCreateShader(GL_SHADER_MAPPING[static_cast<u32>(type)]), glDeleteShader };
 
 		// Load the resource
 		auto shader_source = resource->load_all();
-		seal_verify_result(shader_source);
 
-		const GLchar *source_ptr = reinterpret_cast<const GLchar *>(shader_source->data());
-		glShaderSource(shader, 1, &source_ptr, nullptr);
-		glCompileShader(shader);
+		const GLchar *source_ptr = reinterpret_cast<const GLchar *>(shader_source.data());
+		seal_gl_verify(glShaderSource(shader, 1, &source_ptr, nullptr));
+		seal_gl_verify(glCompileShader(shader));
 
 		// Handl errors in compeletion
 		GLint was_successful = 0;
@@ -36,15 +35,14 @@ namespace seal::gl {
 
 			glGetShaderInfoLog(shader, log_length, &real_length, log.data());
 
-
 			seal::log::error("Failed to load shader from resource: {}", resource->path());
 			if(real_length >= 0) {
 				seal::log::error("{}", log.data());
 			}
 
-			return seal::failure("Failed to compile shader");
+			throw seal::failure("Failed to compile shader");
 		}
 
-		return { std::move(shader) };
+		return seal::gl::shader(std::move(shader));
 	}
 }

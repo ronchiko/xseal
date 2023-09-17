@@ -4,17 +4,12 @@
 
 #include <fmt/format.h>
 
-#include "seal/defenitions.h"
-#include "seal/types.hpp"
 #include "seal/types/failure.hpp"
 
-namespace seal {
-	template<typename TValue, typename TError = seal::failure>
-	class result;
-}
+
 
 namespace seal::log {
-	enum class Severity
+	enum class severity
 	{
 		Debug,
 		Info,
@@ -23,34 +18,34 @@ namespace seal::log {
 	};
 
 	/**
-	 * @brief Initializes the logging system for XSeal
+		Initializes the logging system for XSeal.
 	 */
-	seal::result<void> initialize();
+	void initialize();
 
 	/**
-	 * @brief Writes a log message
-	 *
-	 * @param severity: The severity of the message
-	 * @param message: The message to log
+		Writes a log message.
+	 
+		\param severity: The severity of the message
+		\param message: The message to log
 	 */
-	void write_log(Severity severity, const char *message);
+	void write_log(severity severity, const char *message);
 
 	template<typename... Args>
 	void info(const char *fmt, Args&&...args)
 	{
-		write_log(Severity::Info, fmt::vformat(fmt, fmt::make_format_args(args...)).c_str());
+		write_log(severity::Info, fmt::vformat(fmt, fmt::make_format_args(args...)).c_str());
 	}
 
 	template<typename... Args>
 	void warning(const char *fmt, Args&&...args)
 	{
-		write_log(Severity::Warning, fmt::vformat(fmt, fmt::make_format_args(args...)).c_str());
+		write_log(severity::Warning, fmt::vformat(fmt, fmt::make_format_args(args...)).c_str());
 	}
 
 	template<typename... Args>
 	void error(const char *fmt, Args&&...args)
 	{
-		write_log(Severity::Error, fmt::vformat(fmt, fmt::make_format_args(args...)).c_str());
+		write_log(severity::Error, fmt::vformat(fmt, fmt::make_format_args(args...)).c_str());
 	}
 
 #ifdef SEAL_DEBUG
@@ -59,7 +54,7 @@ namespace seal::log {
 	template<typename... Args>
 	void debug(const char *fmt, Args&&...args)
 	{
-		lwrite_logog(Severity::Debug, fmt::vformat(fmt, fmt::make_format_args(args...)).c_str());
+		write_log(severity::Debug, fmt::vformat(fmt, fmt::make_format_args(args...)).c_str());
 	}
 #else
 	// In release mode no do nothing

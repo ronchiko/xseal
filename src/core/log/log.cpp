@@ -15,41 +15,41 @@
 
 
 namespace seal::log {
-	static std::fstream g_Logfile;
+	namespace {
+		std::fstream g_Logfile;
 
-	constexpr const char *SEVERITY_PREFIXES[] = {
-		"[DEBUG]",
-		"[INFO]",
-		"[WARNING]",
-		"[ERROR]",
-	};
+		constexpr const char *SEVERITY_PREFIXES[] = {
+			"[DEBUG]",
+			"[INFO]",
+			"[WARNING]",
+			"[ERROR]",
+		};
 
-	constexpr console_color SEVERITY_COLORS[] = {
-		console_color::Green,
-		console_color::Blue,
-		console_color::Yellow,
-		console_color::Red,
-	};
+		constexpr console_color SEVERITY_COLORS[] = {
+			console_color::Green,
+			console_color::Blue,
+			console_color::Yellow,
+			console_color::Red,
+		};
 
-	seal::result<void> initialize()
+		/**
+		   Write a colored prefix to the console.
+
+		   \param severity: The severity index
+		 */
+		void write_log_prefix(const u32 severity)
+		{
+			color_context ctx(SEVERITY_COLORS[severity]);
+			std::cout << SEVERITY_PREFIXES[severity];
+		}
+	}
+
+	void initialize()
 	{
 		g_Logfile = std::fstream(std::filesystem::current_path() / "seal.log", std::ios::out);
-
-		return {};
 	}
 
-	/**
-	   Write a colored prefix to the console.
-	  
-	   \param severity: The severity index
-	 */
-	static void write_log_prefix(u32 severity)
-	{
-		color_context ctx(SEVERITY_COLORS[severity]);
-		std::cout << SEVERITY_PREFIXES[severity];
-	}
-
-	void write_log(Severity severity, const char *message)
+	void write_log(severity severity, const char *message)
 	{
 		const auto severity_index = static_cast<std::uint32_t>(severity);
 
@@ -64,7 +64,7 @@ namespace seal::log {
 #ifdef SEAL_DEBUG
 	void debug(const char *message)
 	{
-		write_log(Severity::Debug, message);
+		write_log(severity::Debug, message);
 	}
 #endif
 }

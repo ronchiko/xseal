@@ -7,22 +7,21 @@
 
 namespace seal::gl {
 
-	result<void> shader_information::bind_to_vao(GLuint vao)
+	void shader_information::bind_to_vao(const GLuint vao)
 	{
 		seal::overload overload{
-			[&](const graphics& graphics) -> result<void> {
+			[&](const graphics& graphics) {
 				vao_context context(vao, sizeof(api::vertex));
 
-				seal_verify_result(context.bind<v3<f32>>(graphics.vertex_handle));
-				// seal_verify_result(context.bind<v2<f32>>(graphics.uv_handle)); TODO: When textures
-				seal_verify_result(context.bind<v4<f32>>(graphics.tint_handle));
-				return {};
+				context.bind<v3<f32>>(graphics.vertex_handle);
+				context.bind<v2<f32>>(graphics.uv_handle);
+				context.bind<v4<f32>>(graphics.tint_handle);
 			},
-			[](const auto& any) -> result<void> {
-				return seal::fail<seal::failure::NotImplemented>("VAO binding failed");
+			[](const auto& any) {
+				throw seal::fail<seal::failure::NotImplemented>("VAO binding failed");
 			},
 		};
 
-		return std::visit(overload, m_Current);
+		std::visit(overload, current);
 	}
 }

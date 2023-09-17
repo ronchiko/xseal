@@ -15,24 +15,25 @@ namespace seal::gl {
 		enum class type
 		{
 			Vertex,
-			Fragement,
+			Fragment,
 			Compute
 		};
 
 		/**
 		   Creates a shader from a resource.
 		  
-		   \param rsrc: The resource to create the shader from
-		   \return 
+		   \param resource: The resource to create the shader from
+		   \param type: The type of the shader
 		 */
-		static result<shader> from_resource(resource rsrc, type type);
+		static shader from_resource(resource resource, type type);
 
+		[[nodiscard]]
 		constexpr GLuint id() const {
 			return m_Id;
 		}
 
 	private:
-		inline shader(gl_id id) noexcept
+		explicit inline shader(gl_id id) noexcept
 			: m_Id(std::move(id))
 		{}
 

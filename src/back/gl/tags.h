@@ -8,5 +8,7 @@ namespace seal::gl {
 		Start = 1000,
 		Program,
 		Batch,
+		Texture,
 	};
 }
+

@@ -3,7 +3,6 @@
 #include <GLFW/glfw3.h>
 
 #include "seal/types.hpp"
-#include "seal/types/result.hpp"
 
 namespace seal::glfw {
 	class window
@@ -28,7 +27,7 @@ namespace seal::glfw {
 			\param scale: The scale of the window
 			\param title: The title of the window
 		 */
-		static result<window> create_window(v2<f32> scale, const std::string& title);
+		static window create_window(v2<f32> scale, const std::string& title);
 
 		/**
 		   Checks if the window should close.
@@ -38,7 +37,7 @@ namespace seal::glfw {
 		/**
 		   Swaps the windows buffers.
 		 */
-		void swap_buffers();
+		void swap_buffers() const;
 
 		/**
 		   Gets the resolution of this window.

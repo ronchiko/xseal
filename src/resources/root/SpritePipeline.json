@@ -1,5 +1,0 @@
-{
-	"type": "graphics",
-	"vertex": "::\\Vertex.glsl",
-	"fragment":  "::\\Fragment.glsl"
-}

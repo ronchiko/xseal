@@ -2,10 +2,14 @@
 
 precision mediump float;
 
-in vec4 vertex_color;
+layout(binding = 0) uniform sampler2D Texture;
 
-out vec4 frag_color;
+in vec2 UvCoordinate;
+in vec4 VertexColor;
 
-void main() {
-    frag_color = vertex_color;
+out vec4 Seal_FragmentColor;
+
+void main()
+{
+	Seal_FragmentColor = VertexColor * texture2D(Texture, UvCoordinate);
 }

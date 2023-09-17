@@ -1,6 +1,6 @@
 #pragma once
 
-#include "seal/types/result.hpp"
+#include "seal/types/failure.hpp"
 
 namespace seal {
 	
@@ -11,20 +11,20 @@ namespace seal {
 	   \return 
 	 */
 	template<typename AlternateT, typename... AlternatesT>
-	constexpr result<AlternateT&> try_get(std::variant<AlternatesT...>& variant)
+	constexpr AlternateT& try_get(std::variant<AlternatesT...>& variant)
 	{
 		if (!std::holds_alternative<AlternateT>(variant)) {
-			return seal::failure("Variant holds expected alternative");
+			throw seal::failure("Variant holds unexpected alternative");
 		}
 
 		return std::get<AlternateT>(variant);
 	}
 
 	template<typename AlternateT, typename... AlternatesT>
-	constexpr result<const AlternateT&> try_get(const std::variant<AlternatesT...>& variant)
+	constexpr const AlternateT& try_get(const std::variant<AlternatesT...>& variant)
 	{
 		if(!std::holds_alternative<AlternateT>(variant)) {
-			return seal::failure("Variant holds expected alternative");
+			throw seal::failure("Variant holds unexpected alternative");
 		}
 
 		return std::get<AlternateT>(variant);

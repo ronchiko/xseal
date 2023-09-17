@@ -2,6 +2,7 @@
 
 #include <tuple>
 
+#include "seal/defenitions.h"
 #include "seal/engine/ecs/entity.hpp"
 
 namespace seal::ecs::detail {
@@ -47,7 +48,7 @@ namespace seal::ecs::detail {
 		seal_force_inline void invoke(SystemT& system, const tuple_t& args)
 		{
 			// clang-format off
-			std::apply([&system](entity_id id, auto&&...arguments) { 
+			std::apply([&](const entity_id id, auto&&...arguments) { 
 				(&system->*Function)(entity::find(id), arguments...); 
 			}, args);
 			// clang-format on

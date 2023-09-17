@@ -3,6 +3,7 @@
 #include <nlohmann/json.hpp>
 
 #include "seal/types/result.hpp"
+#include "seal/types/conversion_table.hpp"
 
 #include "seal/api/resource.hpp"
 
@@ -13,13 +14,13 @@ namespace seal::json {
 	   \param content: The content to parse a JSON.
 	 */
 	template<typename DataT>
-	result<nlohmann::json> parse(const DataT& content)
+	nlohmann::json parse(const DataT& content)
 	{
 		try {
 			return nlohmann::json::parse(content);
 		} catch(const std::exception& err) {
 			seal::log::error("Failed to parse JSON: {}", err.what());
-			return seal::fail<seal::failure::fail_type::ExternalFailure>(err.what());
+			throw seal::fail<seal::failure::fail_type::ExternalFailure>(err.what());
 		}
 	}
 
@@ -28,11 +29,19 @@ namespace seal::json {
 	  
 	   \param resource: The resource to load as a JSON.
 	 */
-	inline result<nlohmann::json> load_as_json(resource& resource)
+	inline nlohmann::json load_as_json(const resource& resource)
 	{
-		auto content = resource->load_all();
-		seal_verify_result(content);
+		const auto content = resource->load_all();
+		return parse(content);
+	}
 
-		return parse(*content);
+	template<typename EnumT>
+	inline EnumT parse_to_enum(const nlohmann::json& json)
+	{
+		if (!json.is_string()) {
+			throw seal::failure("Enum expected to be a string.");
+		}
+
+		return convert<EnumT>(json.get<std::string>());
 	}
 }

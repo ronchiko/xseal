@@ -4,8 +4,10 @@
 #include "seal/types/ext/vector.hpp"
 
 #include "gl.hpp"
+#include "port/shader_attribute_location.hpp"
 
 namespace seal::gl {
+
 	struct vao_context
 	{
 	public:
@@ -17,7 +19,7 @@ namespace seal::gl {
 		   Binds a structure to the VAO.
 		 */
 		template<typename StructureT>
-		result<void> bind(u32 location);
+		void bind(shader_attribute_location location);
 
 	private:
 		/**
@@ -26,7 +28,7 @@ namespace seal::gl {
 		   \param attribute_location: The location of the attribute to bind.
 		   \param size: The amount of floats the attribute takes.
 		 */
-		result<void> bind_raw(u32 attribute_location, u32 size);
+		void bind_raw(u32 attribute_location, u32 size);
 
 		vao_t m_Vao = 0;
 		size_t m_VertexSize = 0;
@@ -34,7 +36,7 @@ namespace seal::gl {
 	};
 }
 
-constexpr seal::gl::vao_context::vao_context(vao_t vao, size_t vertex_size)
+constexpr seal::gl::vao_context::vao_context(const vao_t vao, const size_t vertex_size)
 	: m_Vao(vao)
 	, m_VertexSize(vertex_size)
 	, m_Used(0)
@@ -43,8 +45,13 @@ constexpr seal::gl::vao_context::vao_context(vao_t vao, size_t vertex_size)
 }
 
 template<typename StructureT>
-seal::result<void> seal::gl::vao_context::bind(const u32 location)
+void seal::gl::vao_context::bind(const shader_attribute_location location)
 {
+	// If ok if a shader doesn't need a specific attribute.
+	if(INVALID_SHADER_ATTRIBUTE == location) {
+		return;
+	}
+
 	if constexpr(seal::is_matrix_v<StructureT>) {
 		using matrix = seal::matrix_traits<StructureT>;
 		using matrix_element = typename matrix::element_type;
@@ -63,6 +70,6 @@ seal::result<void> seal::gl::vao_context::bind(const u32 location)
 
 		return bind_raw(location, size);
 	} else {
-		return seal::fail<seal::failure::NotImplemented>();
+		throw seal::fail<seal::failure::NotImplemented>();
 	}
 }

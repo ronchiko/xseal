@@ -14,9 +14,9 @@ namespace seal {
 
 		virtual ~embedded_resource() override = default;
 
-		virtual result<std::span<const u8>> load_all() override;
+		virtual std::span<const u8> load_all() override;
 
-		virtual result<u32> load(std::span<u8> buffer) override;
+		virtual u32 load(std::span<u8> buffer) override;
 
 	private:
 		const u8 *m_Data;

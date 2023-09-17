@@ -26,6 +26,8 @@ namespace seal::api {
 
 	/**
 	   An object to help check the types of data passed using the API.
+
+	   \note: This object does not own the inner resource. Make sure you free them.
 	 */
 	class tagged_object final
 	{
@@ -47,8 +49,8 @@ namespace seal::api {
 		constexpr tagged_object& operator=(const tagged_object&) = default;
 
 		constexpr tagged_object& operator=(tagged_object&& other) noexcept {
-			std::exchange(m_Tag, other.m_Tag);
-			std::exchange(m_Data, other.m_Data);
+			std::swap(m_Tag, other.m_Tag);
+			std::swap(m_Data, other.m_Data);
 
 			return *this;
 		}
@@ -56,9 +58,9 @@ namespace seal::api {
 		constexpr ~tagged_object() = default;
 
 		template<typename T>
-		constexpr static tagged_object bind(T& object)
+		constexpr static tagged_object bind(T* object)
 		{
-			return tagged_object{ tagged_type<T>::tag_v, &object };
+			return tagged_object{ tagged_type<T>::tag_v, object };
 		}
 
 		/**
@@ -68,14 +70,14 @@ namespace seal::api {
 		constexpr const T *acquire() const
 		{
 			assert_tag<T>();
-			return reinterpret_cast<const T *>(m_Data);
+			return static_cast<const T *>(m_Data);
 		}
 
 		template<typename T>
 		constexpr T *acquire()
 		{
 			assert_tag<T>();
-			return reinterpret_cast<T *>(m_Data);
+			return static_cast<T *>(m_Data);
 		}
 
 		constexpr bool operator==(const tagged_object& other) const {
@@ -109,7 +111,7 @@ struct seal::error_value<seal::api::tagged_object>
 	static constexpr seal::api::tagged_object VALUE = seal::api::UNTAGGED_OBJECT;
 };
 
-#define seal_tag_type(type, tag)                                                                   \
+#define SEAL_TAG_TYPE(type, tag)                                                                   \
 	template<>                                                                                     \
 	struct ::seal::api::tagged_type<type>                                                          \
 	{                                                                                              \

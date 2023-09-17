@@ -31,7 +31,8 @@ workspace "XSeal"
         "thirdparty/glfw/include",
         "thirdparty/glm",
         "thirdparty/json/include",
-        "thirdparty/entt/single_include"
+        "thirdparty/entt/single_include",
+        "thirdparty/stb"
     }
 
     flags {

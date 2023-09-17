@@ -1,7 +1,5 @@
 #pragma once
 
-#include "seal/types/result.hpp"
-
 #include "gl.hpp"
 
 namespace seal::gl {
@@ -10,19 +8,18 @@ namespace seal::gl {
 		template<GLbitfield Flags>
 		struct buffer_mapper
 		{
-			result<void *> operator()(GLenum type, size_t start, size_t offset)
+			void * operator()(const GLenum type, const size_t start, const size_t offset) const
 			{
 				void *mapped_address = seal_gl_verify(glMapBufferRange(type, start, offset, Flags));
 				return mapped_address;
 			}
 		};
 
-		struct buffer_unmapper
+		struct buffer_un_mapper
 		{
-			result<void> operator()(void *, GLenum type) const
+			void operator()(void *, const GLenum type) const
 			{
 				seal_gl_verify(glUnmapBuffer(type));
-				return {};
 			}
 		};
 	}
@@ -30,24 +27,23 @@ namespace seal::gl {
 	/**
 	   Basic management type of a buffer.
 	 */
-	template<typename ElementT, typename MapperT, typename UnmapperT>
+	template<typename ElementT, typename MapperT, typename UnMapperT>
 	struct basic_buffer_data
 	{
 	public:
 		static_assert(std::is_trivially_constructible_v<MapperT>,
-					  "MapperT must be trivailly constructible");
+					  "MapperT must be trivially constructable");
 
-		static_assert(std::is_trivially_constructible_v<UnmapperT>,
-					  "UnmapperT must be trivailly constructible");
+		static_assert(std::is_trivially_constructible_v<UnMapperT>,
+					  "UnMapperT must be trivially constructable");
 
-		static result<basic_buffer_data> map(GLenum type, size_t start, size_t size)
+		static basic_buffer_data map(GLenum type, size_t start, size_t size)
 		{
 			MapperT mapper;
 
 			auto address = mapper(type, start, size);
-			seal_verify_result(address);
 
-			return basic_buffer_data{ type, reinterpret_cast<ElementT *>(*address) };
+			return basic_buffer_data{ type, reinterpret_cast<ElementT *>(address) };
 		}
 
 		~basic_buffer_data() noexcept
@@ -57,7 +53,7 @@ namespace seal::gl {
 			}
 
 			seal_mute_exceptions({
-				UnmapperT unmapper;
+				UnMapperT unmapper;
 				if(!unmapper(m_Data, m_Type)) {
 					seal::log::warning("Failed to unmap buffer");
 				}
@@ -89,7 +85,7 @@ namespace seal::gl {
 		}
 
 	private:
-		basic_buffer_data(GLenum type, ElementT *data)
+		basic_buffer_data(const GLenum type, ElementT *data)
 			: m_Type(type)
 			, m_Data(data)
 		{}
@@ -102,12 +98,12 @@ namespace seal::gl {
 	template<typename ElementT>
 	using readonly_buffer_data = basic_buffer_data<ElementT,
 												   detail::buffer_mapper<GL_MAP_READ_BIT>,
-												   detail::buffer_unmapper>;
+												   detail::buffer_un_mapper>;
 
 	// A buffer data that can only be written to.
 	template<typename ElementT>
 	using writable_buffer_data = basic_buffer_data<
 		ElementT,
 		detail::buffer_mapper<GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_RANGE_BIT>,
-		detail::buffer_unmapper>;
+		detail::buffer_un_mapper>;
 }

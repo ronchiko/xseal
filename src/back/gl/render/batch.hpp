@@ -1,7 +1,5 @@
 #pragma once
 
-#include <vector>
-
 #include "seal/api/back/vertex.hpp"
 
 #include "objects/buffer.hpp"
@@ -15,14 +13,15 @@ namespace seal::gl {
 	public:
 		batch() = default;
 
-		static result<batch> create_batch(const seal::api::batch_initialization& initialize);
+		static batch create_batch(const api::batch_initialization& initialize);
 
-		result<seal::api::buffer> lock(seal::api::batch_buffer_type, bool read);
+		api::buffer lock(api::batch_buffer_type, bool read);
 
-		result<void> unlock(seal::api::batch_buffer_type, bool write);
+		void unlock(api::batch_buffer_type, bool write);
 
-		result<void> publish(size_t vertecies);
+		void publish(size_t vertices);
 
+		[[nodiscard]]
 		const vertex_array& vao() const
 		{
 			return m_Vao;
@@ -30,7 +29,7 @@ namespace seal::gl {
 
 	private:
 		explicit batch(vertex_array vao,
-					   flags<api::batch_hint> hint,
+					   const flags<api::batch_hint> hint,
 					   controlled_buffer<api::vertex> vbo,
 					   controlled_buffer<u32> ibo) 
 			: m_Vao(std::move(vao))
@@ -48,4 +47,4 @@ namespace seal::gl {
 
 }
 
-seal_tag_type(seal::gl::batch, seal::gl::tags::Batch);
+SEAL_TAG_TYPE(seal::gl::batch, seal::gl::tags::Batch);

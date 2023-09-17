@@ -14,7 +14,7 @@ namespace seal {
 	/**
 	 * Represents a failure.
 	 */
-	class failure
+	class failure : public std::runtime_error
 	{
 	private:
 		static constexpr u32 NON_FATAL_ERROR = 0;
@@ -24,7 +24,7 @@ namespace seal {
 	public:
 		enum fail_type : u32
 		{
-			CustonNonFatal = NON_FATAL_ERROR,
+			CustomNonFatal = NON_FATAL_ERROR,
 			EndReached, // The end of something was reached (file or stream)
 			ExternalFailure,	// An external library/program has caused the failure.
 
@@ -33,7 +33,7 @@ namespace seal {
 			NotImplemented,  // The requested operation is not implemented
 		};
 
-		constexpr explicit failure(std::string message, fail_type type = Custom);
+		inline explicit failure(std::string message, fail_type type = Custom);
 
 		template<typename... Fmt>
 		explicit failure(std::string message, Fmt&&...);
@@ -42,11 +42,6 @@ namespace seal {
 		/// Implemented in result.hpp
 		template<typename T>
 		constexpr operator seal::result<T, seal::failure>();
-
-		/**
-		 * The message of the failure.
-		 */
-		constexpr const char *what() const;
 
 		/*
 			Checks if the failure is a fatal failure
@@ -76,21 +71,16 @@ namespace seal {
 	}
 }
 
-constexpr seal::failure::failure(std::string message, fail_type type)
-	: m_Type(type)
-	, m_Message(std::move(message))
+inline seal::failure::failure(std::string message, fail_type type)
+	: std::runtime_error(std::move(message))
+	, m_Type(type)
 {}
 
 template<typename... Fmt>
 inline seal::failure::failure(std::string message, Fmt&&...rest)
-	: m_Type(Custom)
-	, m_Message(fmt::vformat(message.c_str(), fmt::make_format_args(rest...)))
+	: std::runtime_error(fmt::vformat(message.c_str(), fmt::make_format_args(rest...)))
+	, m_Type(Custom)
 {}
-
-constexpr const char *seal::failure::what() const
-{
-	return m_Message.c_str();
-}
 
 constexpr bool seal::failure::is_fatal() const
 {

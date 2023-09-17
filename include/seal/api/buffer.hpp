@@ -26,6 +26,14 @@ namespace seal::api {
 		   \param container: The container to bind.
 		 */
 		constexpr static buffer bind(const container auto& container);
+
+		/**
+			Creates a buffer from raw memory
+
+			\param data: The data to contain.
+			\param count: The size of the data in bytes.
+		 */
+		constexpr static buffer bind(void *data, size_t count);
 	};
 }
 
@@ -46,5 +54,13 @@ constexpr seal::api::buffer seal::api::buffer::bind(const seal::container auto& 
 	return buffer{
 		element_size * container.size(),
 		container.data(),
+	};
+}
+
+constexpr seal::api::buffer seal::api::buffer::bind(void* data, size_t count)
+{
+	return buffer{
+		count,
+		data,
 	};
 }

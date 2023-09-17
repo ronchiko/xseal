@@ -3,11 +3,9 @@
 #include <span>
 
 #include "seal/types.hpp"
-#include "seal/types/result.hpp"
 
 #include "gl.hpp"
 #include "gl_id.hpp"
-#include "port/buffer_data.hpp"
 
 namespace seal::gl {
 	class buffer
@@ -35,7 +33,7 @@ namespace seal::gl {
 		   \param buffer: The buffer to bind to this buffer.
 		 */
 		template<typename T>
-		static result<buffer> create_buffer(type type, usage usage, const std::span<T> buffer);
+		static buffer create_buffer(type type, usage usage, const std::span<T> buffer);
 
 		/**
 		   Creates a GL buffer with an empty buffer.
@@ -44,7 +42,7 @@ namespace seal::gl {
 		   \param usage: The intended usage of the buffer.
 		   \param size: The size of the buffer in bytes.
 		 */
-		static result<buffer> create_buffer(type type, usage usage, size_t size);
+		static buffer create_buffer(type type, usage usage, size_t size);
 
 		/**
 		   Binds this buffer.
@@ -55,34 +53,34 @@ namespace seal::gl {
 		   Read memory from this buffer.
 		 */
 		template<typename ElementT>
-		result<std::unique_ptr<ElementT[]>> read(size_t offset, size_t size);
+		std::unique_ptr<ElementT[]> read(size_t offset, size_t size);
 
 		/**
 		   Reads the memory into an already existing buffer.
 
 		   \param offset - The offset to read from
 		   \param size - The amount of bytes to read
-		   \param buffer - The buffer to read into.
+		   \param elements - The buffer to read into.
 		 */
 		template<typename ElementT>
-		result<void> read_into(size_t offset, size_t size, ElementT *buffer);
+		void read_into(size_t offset, size_t size, ElementT *elements);
 
 		/**
 		   Writes data in the buffer at an offset.
 		 */
 		template<typename ElementT>
-		result<void> write(size_t offset, std::span<ElementT> span);
+		void write(size_t offset, std::span<ElementT> data);
 
 		/**
 		   The size of the buffer in bytes.
 		 */
-		constexpr size_t size() const
+		[[nodiscard]] constexpr size_t size() const
 		{
 			return m_Size;
 		}
 
 		template<typename T>
-		constexpr size_t size_in() const
+		[[nodiscard]] constexpr size_t size_in() const
 		{
 			return m_Size / sizeof(T);
 		}
@@ -99,9 +97,7 @@ namespace seal::gl {
 }
 
 template<typename T>
-seal::result<seal::gl::buffer> seal::gl::buffer::create_buffer(type type,
-															   usage usage,
-															   const std::span<T> buffer)
+seal::gl::buffer seal::gl::buffer::create_buffer(type type, usage usage, const std::span<T> buffer)
 {
 	GLuint buffer_id = 0;
 
@@ -116,50 +112,46 @@ seal::result<seal::gl::buffer> seal::gl::buffer::create_buffer(type type,
 }
 
 template<typename T>
-seal::result<std::unique_ptr<T[]>> seal::gl::buffer::read(size_t offset, size_t size)
+std::unique_ptr<T[]> seal::gl::buffer::read(size_t offset, const size_t size)
 {
 	std::unique_ptr<T[]> output{ new T[size] };
 
-	seal_verify_result(read_into<T>(0, size, output.get()));
+	read_into<T>(offset, size, output.get());
 	return output;
 }
 
 template<typename T>
-seal::result<void> seal::gl::buffer::read_into(size_t offset, size_t size, T *elements)
+void seal::gl::buffer::read_into(size_t offset, size_t size, T *elements)
 {
 	bind();
 
 #if defined(SEAL_GLES_3) || defined(SEAL_PREFER_MAP_BUFFER)
-	// In GLES 3 we dont have glGetBufferSubData
-	seal_mute_exceptions({
+	// In GL ES 3 we don't have glGetBufferSubData
+	{
 		auto buffer_data = readonly_buffer_data<T>::map(static_cast<GLenum>(m_Type),
 														offset * sizeof(T),
 														size * sizeof(T));
-		seal_verify_result(buffer_data);
-		std::memcpy(elements, buffer_data->data(), size * sizeof(T));
-	});
-
+		std::memcpy(elements, buffer_data.data(), size * sizeof(T));
+	}
 
 #else
 	// If this call fails it means we might read from the buffer for the first time
 	glGetBufferSubData(static_cast<GLenum>(m_Type), offset * sizeof(T), size * sizeof(T), elements);
 #endif
-	return {};
 }
 
 template<typename T>
-seal::result<void> seal::gl::buffer::write(size_t offset, std::span<T> data)
+void seal::gl::buffer::write(size_t offset, std::span<T> data)
 {
 	bind();
 
 #if defined(SEAL_GLES_3) || defined(SEAL_PREFER_MAP_BUFFER)
-	// In GLES 3 we dont have glBufferSubData
+	// In GL ES 3 we don't have glBufferSubData
 	{
 		auto buffer_data = writable_buffer_data<T>::map(static_cast<GLenum>(m_Type),
 														offset * sizeof(T),
 														data.size_bytes());
-		seal_verify_result(buffer_data);
-		std::memcpy(buffer_data->data(), data.data(), data.size_bytes());
+		std::memcpy(buffer_data.data(), data.data(), data.size_bytes());
 	};
 
 #else
@@ -171,7 +163,6 @@ seal::result<void> seal::gl::buffer::write(size_t offset, std::span<T> data)
 								   data.size_bytes(),
 								   data.data()));
 #endif
-	return {};
 }
 
 template<>
@@ -192,7 +183,7 @@ struct fmt::formatter<seal::gl::buffer>
 	/**
 	   Writes the failure to the an iterator.
 
-	   \param failure: The failure to write
+	   \param buffer: The buffer to write
 	   \param ctx: The iterator to write to
 	 */
 	template<typename FormatContext>

@@ -23,6 +23,6 @@ namespace seal {
 		   \param path: The path to fetch
 		   \note: The allocated resource is owned by the caller
 		 */
-		virtual result<resource_interface*> fetch(const std::string& path) = 0;
+		virtual resource_interface* fetch(const std::string& path) = 0;
 	};
 }

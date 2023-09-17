@@ -4,9 +4,14 @@
 
 #include "pipeline/program.hpp"
 
-inline static seal::storage<seal::gl::batch> m_Batches;
 
 namespace seal {
+
+	namespace {
+		inline storage<gl::batch> g_Batches;
+	}
+
+
 	namespace gl {
 		/**
 		   Creates a controlled buffer.
@@ -19,105 +24,101 @@ namespace seal {
 		   @param size: The amount of elements in the buffer (in BufferType's).
 		 */
 		template<buffer::type Type, api::batch_hint ModeHint, typename BufferType>
-		result<controlled_buffer<BufferType>> create_buffer(flags<api::batch_hint> hints,
-															 size_t size)
+		controlled_buffer<BufferType> create_buffer(const flags<api::batch_hint> hints,
+													const size_t size)
 		{
 			using buffer::usage::DynamicDraw;
 			using buffer::usage::StaticDraw;
 
 			const auto buffer_mode = hints.is_active(ModeHint) ? DynamicDraw : StaticDraw;
 			auto new_buffer = buffer::create_buffer(Type, buffer_mode, size * sizeof(BufferType));
-			seal_verify_result(new_buffer);
 
-			return controlled_buffer<BufferType>(std::move(*new_buffer));
+			return controlled_buffer<BufferType>(std::forward<buffer>(new_buffer));
 		}
 
-		result<batch> batch::create_batch(const api::batch_initialization& initialize)
+		batch batch::create_batch(const api::batch_initialization& initialize)
 		{
 			// Create the vertex array
 			auto vertex_array = vertex_array::create_vertex_array();
-			seal_verify_result(vertex_array);
 
 			// Create the vertex buffer.
 			auto vertex_buffer = create_buffer<buffer::type::VertexBuffer,
-											   api::batch_hint::KeepVertecies,
-											   api::vertex>(initialize.hints, initialize.vertecies);
-			seal_verify_result(vertex_buffer);
+											   api::batch_hint::KeepVertices,
+											   api::vertex>(initialize.hints, initialize.vertices);
 
 			// Create the index buffer
 			auto index_buffer = create_buffer<buffer::type::IndexBuffer,
-											  api::batch_hint::KeepIndecies,
-											  u32>(initialize.hints, initialize.indecies);
-			seal_verify_result(index_buffer);
+											  api::batch_hint::KeepIndices,
+											  u32>(initialize.hints, initialize.indices);
 
 			return batch{
-				std::move(*vertex_array),
+				std::move(vertex_array),
 				initialize.hints,
-				std::move(*vertex_buffer),
-				std::move(*index_buffer),
+				std::move(vertex_buffer),
+				std::move(index_buffer),
 			};
 		}
 
-		result<api::buffer> batch::lock(const api::batch_buffer_type type, const bool read)
+		api::buffer batch::lock(const api::batch_buffer_type type, const bool read)
 		{
 			switch(type) {
 			case seal::api::batch_buffer_type::VertexBuffer:
 			{
-				seal_verify_result(m_Vbo.load());
-				if (read) {
-					seal_verify_result(m_Vbo.read());
+				m_Vbo.load();
+				if(read) {
+					m_Vbo.read();
 				}
 
-				return seal::api::buffer::bind(m_Vbo.view());
+				return api::buffer::bind(m_Vbo.view());
 			}
 
-			case seal::api::batch_buffer_type::IndexBuffer:
+			case api::batch_buffer_type::IndexBuffer:
 			{
-				seal_verify_result(m_Ibo.load());
+				m_Ibo.load();
 				if(read) {
-					seal_verify_result(m_Ibo.read());
+					m_Ibo.read();
 				}
 
-				return seal::api::buffer::bind(m_Ibo.view());
+				return api::buffer::bind(m_Ibo.view());
 			}
 
 			default:
-				return seal::failure("Cant lock unsupported batch buffer type.");
+				throw seal::failure("Cant lock unsupported batch buffer type.");
 			}
 		}
 
-		result<void> batch::unlock(const api::batch_buffer_type type, const bool write)
+		void batch::unlock(const api::batch_buffer_type type, const bool write)
 		{
 			switch(type) {
-			case seal::api::batch_buffer_type::VertexBuffer:
-				if (write) {
+			case api::batch_buffer_type::VertexBuffer:
+				if(write) {
 					m_Vbo.write();
 				}
 
 				// If we are hinted the buffer wont be changed, we should free it.
-				if(!m_Hints.is_active(api::batch_hint::KeepVertecies)) {
+				if(!m_Hints.is_active(api::batch_hint::KeepVertices)) {
 					m_Vbo.unload();
 				}
-				return {};
+				return;
 
-			case seal::api::batch_buffer_type::IndexBuffer:
+			case api::batch_buffer_type::IndexBuffer:
 				if(write) {
 					m_Ibo.write();
 				}
 
-				// If we shouldn't keep the indecies we can free them now.
-				if(!m_Hints.is_active(api::batch_hint::KeepIndecies)) {
+				// If we shouldn't keep the indices we can free them now.
+				if(!m_Hints.is_active(api::batch_hint::KeepIndices)) {
 					m_Ibo.unload();
 				}
-				return {};
+				return;
 
 			default:
-				return seal::failure("Cant lock unsupported batch buffer type.");
+				throw failure("Cant lock unsupported batch buffer type.");
 			}
 		}
 
-		result<void> batch::publish(size_t vertecies) {
-
+		void batch::publish(const size_t vertices)
+		{
 			m_Vao.bind();
 
 			m_Vbo->bind();
@@ -126,52 +127,57 @@ namespace seal {
 			m_Vbo.flush();
 			m_Ibo.flush();
 
-			seal_gl_verify(glDrawElements(GL_TRIANGLES, vertecies, GL_UNSIGNED_INT, nullptr));
-			return {};
+			seal_gl_verify(glDrawElements(GL_TRIANGLES,
+										  static_cast<GLsizei>(vertices),
+										  GL_UNSIGNED_INT,
+										  nullptr));
 		}
 	}
 
-	result<api::abstract_t> api::create_batch(const api::batch_initialization& init)
+	api::abstract_t api::create_batch(const api::batch_initialization& initialize)
 	{
-		auto batch = gl::batch::create_batch(init);
-		seal_verify_result(batch);
+		auto batch = gl::batch::create_batch(initialize);
 
-		return api::abstract_t::bind(m_Batches.store(std::move(*batch)));
+		auto& allocated_batch = g_Batches.store(std::forward<gl::batch>(batch));
+		return abstract_t::bind(&allocated_batch);
 	}
 
 	void api::free_batch(api::abstract_t batch)
 	{
 		auto *batch_obj = batch.acquire<gl::batch>();
-		m_Batches.erase(*batch_obj);
+		g_Batches.erase(*batch_obj);
 	}
 
-	result<api::buffer> api::lock_batch_buffer(api::abstract_t batch, api::batch_buffer_type type, bool read)
+	api::buffer api::lock_batch_buffer(api::abstract_t batch, const api::batch_buffer_type type, const bool read)
 	{
 		auto *batch_obj = batch.acquire<gl::batch>();
 
 		return batch_obj->lock(type, read);
 	}
 
-	result<void> api::unlock_batch_buffer(api::abstract_t batch, api::batch_buffer_type type, bool write)
+	void api::unlock_batch_buffer(api::abstract_t batch,
+								  const batch_buffer_type type,
+								  const bool write)
 	{
 		auto *batch_obj = batch.acquire<gl::batch>();
 
 		return batch_obj->unlock(type, write);
 	}
 
-	result<void> api::publish_batch(api::abstract_t batch, size_t vertecies) {
+	void api::publish_batch(api::abstract_t batch, const size_t vertices)
+	{
 		auto *batch_obj = batch.acquire<gl::batch>();
-		
-		return batch_obj->publish(vertecies);
+
+		return batch_obj->publish(vertices);
 	}
 
-	result<void> api::bind_batcher_to_pipeline(api::abstract_t batch, api::abstract_t pipeline) {
+	void api::bind_batch_to_pipeline(api::abstract_t batch, api::abstract_t pipeline)
+	{
 		auto *pipeline_obj = pipeline.acquire<gl::program>();
-		auto *batch_obj = batch.acquire<gl::batch>();
+		const auto *batch_obj = batch.acquire<gl::batch>();
 
 		pipeline_obj->bind();
 
 		pipeline_obj->bind_shader_information(batch_obj->vao().id());
-		return {};
 	}
 }

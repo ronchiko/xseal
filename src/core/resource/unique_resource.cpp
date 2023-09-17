@@ -1,13 +1,15 @@
 #include "seal/api/resource.hpp"
-
+#include "seal/defenitions.h"
 #include "seal/panic.h"
 #include "seal/types/id_provider.hpp"
 
 namespace seal {
-	static id_provider g_ResourceIdProvider;
+	namespace {
+		id_provider g_ResourceIdProvider;
+	}
 
 	unique_resource::unique_resource(std::string path, resource_interface *resource)
-		: m_Path(path)
+		: m_Path(std::move(path))
 		, m_Id(g_ResourceIdProvider.make_id())
 		, m_Resource(resource)
 	{}
@@ -28,14 +30,14 @@ namespace seal {
 		seal_mute_exceptions({ release(); });
 	}
 
-	result<std::span<const u8>> unique_resource::load_all()
+	std::span<const u8> unique_resource::load_all() const
 	{
 		seal_assert(nullptr != m_Resource, "Usage of null resource!");
 
 		return m_Resource->load_all();
 	}
 
-	result<u32> unique_resource::load(std::span<u8> span)
+	u32 unique_resource::load(const std::span<u8> span) const
 	{
 		seal_assert(nullptr != m_Resource, "Usage of null resource!");
 

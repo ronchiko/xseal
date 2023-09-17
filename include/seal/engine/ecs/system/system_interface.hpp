@@ -9,6 +9,8 @@ namespace seal::ecs::manager::detail {
 	class system_interface
 	{
 	public:
+		constexpr system_interface() = default;
+		
 		/**
 		   Creates a new system interface with a set of parameters.
 		 */
@@ -21,7 +23,8 @@ namespace seal::ecs::manager::detail {
 			};
 		}
 
-		void *instance()
+		[[nodiscard]]
+		void *instance() const
 		{
 			return m_System->instance();
 		}
@@ -39,10 +42,10 @@ namespace seal::ecs::manager::detail {
 		};
 
 		template<typename T>
-		class concrete_system : public abstract_system
+		class concrete_system final : public abstract_system
 		{
 		public:
-			concrete_system(T&& instance)
+			explicit concrete_system(T&& instance)
 				: m_Instance(std::move(instance))
 			{}
 

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "seal/log/log.hpp"
 #include "seal/types/traits/tuple.hpp"
 
 #include "seal/engine/ecs/entity.hpp"
@@ -52,7 +53,7 @@ namespace seal::ecs {
 		template<typename SystemType, typename Tuple>
 		void update_dispatch(void *system)
 		{
-			auto& instance = *reinterpret_cast<SystemType *>(system);
+			auto& instance = *static_cast<SystemType *>(system);
 
 			do_registry_call<Tuple>{ seal::entity::g_Registry }.each([&instance](entity_id id,
 																				 auto&&...rest) {
@@ -63,13 +64,13 @@ namespace seal::ecs {
 		template<typename SystemT>
 		void update_once_dispatch(void *system)
 		{
-			reinterpret_cast<SystemT *>(system)->update_once();
+			static_cast<SystemT *>(system)->update_once();
 		}
 
 		template<typename SystemT>
 		void update_last_dispatch(void *system)
 		{
-			reinterpret_cast<SystemT *>(system)->update_last();
+			static_cast<SystemT *>(system)->update_last();
 		}
 	}
 
@@ -82,13 +83,11 @@ namespace seal::ecs {
 			static_assert(initialize_method_ok_v<T>,
 						  "Got invalid initialize method!"
 						  "a system initialize method must return a result<void> and get no arguments.");
-
-			result<void> initialization_status = reinterpret_cast<T *>(system.instance())
-													 ->initialize();
-			// If initialization has failed, then don't register any method.
-			if(initialization_status.is_error()) {
-				seal::log::error("Failed to initalize system");
-				return;
+			try {
+				reinterpret_cast<T *>(system.instance())->initialize();
+			} catch(const std::exception& error) {
+				log::error("Failed to initialize system, failure: {}", error.what());
+				throw;
 			}
 		}
 

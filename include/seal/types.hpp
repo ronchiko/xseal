@@ -34,6 +34,8 @@ namespace seal {
 
 	/// Quaternion
 	using quat = glm::qua<f32>;
+	
+	inline constexpr v4<f32> UNIT_RECT = { 0, 0, 1, 1 };
 
 	struct ansi_string
 	{

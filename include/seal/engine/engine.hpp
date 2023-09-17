@@ -1,7 +1,5 @@
 #pragma once
 
-#include "seal/types/result.hpp"
-
 namespace seal {
 	
 	class engine
@@ -9,13 +7,18 @@ namespace seal {
 	public:
 		constexpr engine() = default;
 		/*
-			Creates a new engine object, initializing whatever is nessecary when called.
+			Creates a new engine object, initializing whatever is necessary when called.
 		 */
-		static result<engine> create();
+		static void create();
 
 		/**
 		  Invokes an engine tick.
-		 */ 
-		void tick(float deltaTime);
+		 */
+		static void tick(float delta_time);
+	
+		/**
+			Gracefully stops the engine
+		 */
+		static void stop();
 	};
 }

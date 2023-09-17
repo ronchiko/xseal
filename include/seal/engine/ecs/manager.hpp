@@ -30,12 +30,15 @@ namespace seal::ecs::manager {
 		   Adds an update listener for this system.
 
 		   \param listener: The listener to add.
+		   \param priority: The priority of the listeners dispatch.
 		 */
-		void update_listener(system_function listener, u32 priority);
+		void update_listener(const system_function& listener, u32 priority) const;
 
-		void *instance();
+		void *instance() const;
 
 	private:
+		friend class engine;
+
 		static inline std::vector<detail::system_interface> g_Systems = {};
 
 		explicit system(void* instance)
@@ -53,7 +56,7 @@ namespace seal::ecs::manager {
 	/**
 	   Trigger a tick (Invokes all the udpdate methods).
 
-	   \param deltaTime: The time that passed between the last tick and this tick.
+	   \param delta_time: The time that passed between the last tick and this tick.
 	 */
-	void tick(float deltaTime);
+	void tick(float delta_time);
 }
