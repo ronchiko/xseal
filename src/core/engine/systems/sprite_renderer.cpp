@@ -1,5 +1,6 @@
 #include "seal/engine/systems/sprite_renderer.hpp"
 
+#include "seal/engine/render/pipeline/pipeline_data_provider.hpp"
 #include "seal/types/id_provider.hpp"
 
 static constexpr size_t VERTICES_PER_BATCH = 4096;

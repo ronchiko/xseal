@@ -6,6 +6,14 @@
 #include "seal/defenitions.h"
 
 namespace seal::glfw {
+	namespace 
+	{
+		void glfw_window_size_changed(GLFWwindow *window, const int width, const int height)
+		{
+			api::update_resolution(v2<u32>{ width, height });
+		}
+	}
+
 	constexpr window::window(nullptr_t) noexcept
 		: m_Window(nullptr)
 	{}
@@ -46,6 +54,7 @@ namespace seal::glfw {
 											nullptr);
 
 		glfwMakeContextCurrent(glfw_window);
+		glfwSetFramebufferSizeCallback(glfw_window, &glfw_window_size_changed);
 
 		return window(glfw_window);
 	}

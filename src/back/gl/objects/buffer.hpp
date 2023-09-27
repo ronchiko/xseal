@@ -1,6 +1,7 @@
 #pragma once
 
 #include <span>
+#include <type_traits>
 
 #include "seal/types.hpp"
 
@@ -18,6 +19,7 @@ namespace seal::gl {
 		{
 			VertexBuffer = GL_ARRAY_BUFFER,
 			IndexBuffer = GL_ELEMENT_ARRAY_BUFFER,
+			UniformBuffer = GL_UNIFORM_BUFFER,
 		};
 
 		enum class usage
@@ -49,6 +51,7 @@ namespace seal::gl {
 		   Binds this buffer.
 		 */
 		void bind() const;
+		void unbind() const;
 
 		/**
 		   Read memory from this buffer.
@@ -86,6 +89,11 @@ namespace seal::gl {
 			return m_Size / sizeof(T);
 		}
 
+		[[nodiscard]] constexpr u32 id() const noexcept
+		{
+			return m_BufferId;
+		}
+
 	private:
 		friend struct fmt::formatter<seal::gl::buffer>;
 
@@ -102,9 +110,9 @@ seal::gl::buffer seal::gl::buffer::create_buffer(type type, usage usage, const s
 {
 	GLuint buffer_id = 0;
 
-	seal_gl_verify(glGenBuffers(1, &buffer_id));
-	seal_gl_verify(glBindBuffer(static_cast<GLenum>(type), buffer_id));
-	seal_gl_verify(glBufferData(static_cast<GLenum>(type),
+	SEAL_GL_VERIFY(glGenBuffers(1, &buffer_id));
+	SEAL_GL_VERIFY(glBindBuffer(static_cast<GLenum>(type), buffer_id));
+	SEAL_GL_VERIFY(glBufferData(static_cast<GLenum>(type),
 								buffer.size_bytes(),
 								reinterpret_cast<const u8 *>(buffer.data()),
 								static_cast<GLenum>(usage)));
@@ -113,7 +121,7 @@ seal::gl::buffer seal::gl::buffer::create_buffer(type type, usage usage, const s
 }
 
 template<typename T>
-std::unique_ptr<T[]> seal::gl::buffer::read(size_t offset, const size_t size)
+std::unique_ptr<T[]> seal::gl::buffer::read(const size_t offset, const size_t size)
 {
 	std::unique_ptr<T[]> output{ new T[size] };
 
@@ -122,48 +130,29 @@ std::unique_ptr<T[]> seal::gl::buffer::read(size_t offset, const size_t size)
 }
 
 template<typename T>
-void seal::gl::buffer::read_into(size_t offset, size_t size, T *elements)
+void seal::gl::buffer::read_into(const size_t offset, const size_t size, T *elements)
 {
 	bind();
 
-#if defined(SEAL_GLES_3) || defined(SEAL_PREFER_MAP_BUFFER)
-	// In GL ES 3 we don't have glGetBufferSubData
 	{
 		auto buffer_data = readonly_buffer_data<T>::map(static_cast<GLenum>(m_Type),
 														offset * sizeof(T),
 														size * sizeof(T));
 		std::memcpy(elements, buffer_data.data(), size * sizeof(T));
 	}
-
-#else
-	// If this call fails it means we might read from the buffer for the first time
-	glGetBufferSubData(static_cast<GLenum>(m_Type), offset * sizeof(T), size * sizeof(T), elements);
-#endif
 }
 
 template<typename T>
-void seal::gl::buffer::write(size_t offset, std::span<T> data)
+void seal::gl::buffer::write(const size_t offset, std::span<T> data)
 {
 	bind();
 
-#if defined(SEAL_GLES_3) || defined(SEAL_PREFER_MAP_BUFFER)
-	// In GL ES 3 we don't have glBufferSubData
 	{
-		auto buffer_data = writable_buffer_data<T>::map(static_cast<GLenum>(m_Type),
-														offset * sizeof(T),
-														data.size_bytes());
+		auto buffer_data = writable_buffer_data<std::remove_const_t<T>>::map(static_cast<GLenum>(m_Type),
+																			 offset * sizeof(T),
+																			 data.size_bytes());
 		std::memcpy(buffer_data.data(), data.data(), data.size_bytes());
 	};
-
-#else
-	GLint value = INT_MAX;
-	glGetBufferParameteriv(static_cast<GLenum>(m_Type), GL_BUFFER_SIZE, &value);
-
-	seal_gl_verify(glBufferSubData(static_cast<GLenum>(m_Type),
-								   offset * sizeof(T),
-								   data.size_bytes(),
-								   data.data()));
-#endif
 }
 
 template<>

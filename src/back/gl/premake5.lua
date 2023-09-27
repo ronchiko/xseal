@@ -22,5 +22,16 @@ project "seal_gl"
         links {
             "glad_gl4"
         }
+        includedirs {
+            "%{wks.location}/thirdparty/glad_gl4/include",
+        }
     
+    filter { "platforms:Emscripten" }
+        links {
+            "glad_es3"
+        }
+        includedirs {
+            "%{wks.location}/thirdparty/glad_es3/include",
+        }
+
     filter ""

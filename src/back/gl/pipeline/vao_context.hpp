@@ -15,6 +15,14 @@ namespace seal::gl {
 
 		constexpr vao_context(vao_t vao, size_t vertex_size);
 
+		vao_context(vao_context&&) = delete;
+		vao_context& operator=(vao_context&&) = delete;
+
+		vao_context(const vao_context&) = delete;
+		vao_context& operator=(const vao_context&) = delete;
+
+		~vao_context();
+
 		/**
 		   Binds a structure to the VAO.
 		 */

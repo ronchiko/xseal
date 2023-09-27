@@ -24,12 +24,13 @@ namespace seal::api {
 	enum class uniform_kind
 	{
 		Texture2d,
+		Buffer,
 	};
 
 	/**
 		The concrete value of the uniform.
 	 */
-	using uniform_value = std::variant<u32>;
+	using uniform_value = std::variant<u32, abstract_t>;
 
 	/**
 		The fields needed to define a new uniform for a stage.
@@ -137,6 +138,7 @@ SEAL_BI_CONVERSION_TABLE(seal::api::pipeline_stage_type, std::string, {
 
 SEAL_BI_CONVERSION_TABLE(seal::api::uniform_kind, std::string, {
 	{api::uniform_kind::Texture2d, "texture2d"},
+	{api::uniform_kind::Buffer, "external-buffer"},
 });
 
 // clang-format on

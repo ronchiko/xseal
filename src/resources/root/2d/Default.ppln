@@ -6,9 +6,14 @@
 			"fragment": "::\\Fragment.glsl",
 			"uniforms": {
 				"Texture": {
-					"location": 0,
+					"location": 1,
 					"type": "texture2d",
 					"value": "::\\EngineLogo.png"
+				},
+				"Seal_GlobalMatrices": {
+					"location": 0,
+					"type": "external-buffer",
+					"value": "seal-global-matrices"
 				}
 			}
 		}

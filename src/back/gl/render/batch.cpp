@@ -127,7 +127,7 @@ namespace seal {
 			m_Vbo.flush();
 			m_Ibo.flush();
 
-			seal_gl_verify(glDrawElements(GL_TRIANGLES,
+			SEAL_GL_VERIFY(glDrawElements(GL_TRIANGLES,
 										  static_cast<GLsizei>(vertices),
 										  GL_UNSIGNED_INT,
 										  nullptr));

@@ -9,19 +9,16 @@
 
 namespace seal::gl {
 
-	struct gl_id
+	class gl_id
 	{
 	public:
-#ifdef SEAL_WEBGL
-		using deleter_t = void GLAD_API_PTR (GLuint id);
-#else
-		using deleter_t = void (GLAPIENTRY)(GLuint id);
-#endif
+		using deleter_t = void GLAPIENTRY (GLuint id);
+
 		constexpr gl_id() noexcept
 			: gl_id(INVALID_ID)
 		{}
 
-		constexpr gl_id(GLuint id, deleter_t *del = nullptr) noexcept
+		constexpr gl_id(const GLuint id, deleter_t *del = nullptr) noexcept
 			: m_Id(id)
 			, m_Deleter(del)
 		{}

@@ -8,7 +8,7 @@
 
 namespace seal::api {
 	/**
-	   The integral type repsenting a tag.
+	   The integral type representing a tag.
 
 	   The tag ranges are:
 	   0 - 1000		: reserved
@@ -38,6 +38,7 @@ namespace seal::api {
 		{}
 
 		constexpr tagged_object(const tagged_object&) = default;
+
 		constexpr tagged_object(tagged_object&& other) noexcept
 			: m_Tag(other.m_Tag)
 			, m_Data(other.m_Data)
@@ -48,7 +49,8 @@ namespace seal::api {
 
 		constexpr tagged_object& operator=(const tagged_object&) = default;
 
-		constexpr tagged_object& operator=(tagged_object&& other) noexcept {
+		constexpr tagged_object& operator=(tagged_object&& other) noexcept
+		{
 			std::swap(m_Tag, other.m_Tag);
 			std::swap(m_Data, other.m_Data);
 
@@ -58,7 +60,7 @@ namespace seal::api {
 		constexpr ~tagged_object() = default;
 
 		template<typename T>
-		constexpr static tagged_object bind(T* object)
+		constexpr static tagged_object bind(T *object)
 		{
 			return tagged_object{ tagged_type<T>::tag_v, object };
 		}
@@ -80,11 +82,13 @@ namespace seal::api {
 			return static_cast<T *>(m_Data);
 		}
 
-		constexpr bool operator==(const tagged_object& other) const {
+		constexpr bool operator==(const tagged_object& other) const
+		{
 			return m_Tag == other.m_Tag && m_Data == other.m_Data;
 		}
 
-		constexpr bool operator!=(const tagged_object& other) const {
+		constexpr bool operator!=(const tagged_object& other) const
+		{
 			return m_Tag != other.m_Tag && m_Data != other.m_Data;
 		}
 
@@ -115,5 +119,5 @@ struct seal::error_value<seal::api::tagged_object>
 	template<>                                                                                     \
 	struct ::seal::api::tagged_type<type>                                                          \
 	{                                                                                              \
-		static constexpr tag_t tag_v = static_cast<seal::api::tag_t>(tag);                         \
+		static constexpr ::seal::api::tag_t tag_v = static_cast<::seal::api::tag_t>(tag);          \
 	}

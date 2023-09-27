@@ -23,6 +23,8 @@ namespace seal {
 	using f32 = float;
 	using f64 = double;
 
+	// Vectors
+
 	template<typename TElement>
 	using v2 = glm::vec<2, TElement>;
 
@@ -31,6 +33,14 @@ namespace seal {
 
 	template<typename TElement>
 	using v4 = glm::vec<4, TElement>;
+
+	// Matrices
+
+	template<typename TElement>
+	using m3 = glm::mat<3, 3, TElement>;
+
+	template<typename TElement>
+	using m4 = glm::mat<4, 4, TElement>;
 
 	/// Quaternion
 	using quat = glm::qua<f32>;

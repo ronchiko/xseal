@@ -45,11 +45,11 @@ namespace seal {
 	gl::texture gl::texture::create(const api::texture_load_info& info)
 	{
 		u32 id = 0;
-		seal_gl_verify(glGenTextures(1, &id));
+		SEAL_GL_VERIFY(glGenTextures(1, &id));
 
 		gl_id id_object(id, &delete_texture);
 
-		seal_gl_verify(glBindTexture(GL_TEXTURE_2D, id));
+		SEAL_GL_VERIFY(glBindTexture(GL_TEXTURE_2D, id));
 
 		// Some checks before accessing the arrays.
 		const auto warp_mode = static_cast<u8>(info.wrapping);
@@ -69,13 +69,13 @@ namespace seal {
 		const auto min_filter = select_minimized_filter(info.scaling, info.generate_mip_maps);
 		const auto mag_filter = TEXTURE_MAG_FILTERS[static_cast<u8>(info.scaling)];
 
-		seal_gl_verify(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapping));
-		seal_gl_verify(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapping));
-		seal_gl_verify(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, min_filter));
-		seal_gl_verify(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag_filter));
+		SEAL_GL_VERIFY(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapping));
+		SEAL_GL_VERIFY(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapping));
+		SEAL_GL_VERIFY(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, min_filter));
+		SEAL_GL_VERIFY(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag_filter));
 
 		// Set the texture image data
-		seal_gl_verify(glTexImage2D(GL_TEXTURE_2D,
+		SEAL_GL_VERIFY(glTexImage2D(GL_TEXTURE_2D,
 					 0,
 					 GL_RGBA,
 					 static_cast<GLsizei>(info.width),
@@ -87,7 +87,7 @@ namespace seal {
 
 		// Generate mip maps
 		if(info.generate_mip_maps) {
-			seal_gl_verify(glGenerateMipmap(GL_TEXTURE_2D));
+			SEAL_GL_VERIFY(glGenerateMipmap(GL_TEXTURE_2D));
 		}
 
 		return gl::texture(info.width, info.height, std::move(id_object));

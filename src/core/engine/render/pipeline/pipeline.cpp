@@ -2,6 +2,7 @@
 
 #include <ranges>
 
+#include "seal/engine/render/pipeline/pipeline_data_provider.hpp"
 #include "seal/engine/render/texture2d.hpp"
 #include "seal/engine/resource.hpp"
 #include "seal/opt/json.hpp"
@@ -97,12 +98,13 @@ namespace seal {
 				switch(kind) {
 				case api::uniform_kind::Texture2d: // BUG: What we do here?
 					return 0u;
+				case api::uniform_kind::Buffer:
+					return pipeline_data_provider<typeless_provider>::open(j.get<std::string>())
+						.abstracted();
 				}
 
 				throw seal::failure("Invalid enum kind {}", static_cast<u32>(kind));
 			}
-
-			resource_collection m_Resources;
 		};
 	}
 

@@ -10,6 +10,7 @@ cppdialect "C++20"
 cdialect "C17"
 
 defines { "X_SEAL" }
+
 workspace "XSeal"
     kind "StaticLib"
     staticruntime "on"
@@ -26,8 +27,6 @@ workspace "XSeal"
     includedirs {
         "include",
         "thirdparty/fmt/include",
-        "thirdparty/glad_gl4/include",
-        "thirdparty/glad_es2/include",
         "thirdparty/glfw/include",
         "thirdparty/glm",
         "thirdparty/json/include",
@@ -55,18 +54,27 @@ workspace "XSeal"
         startproject "seal_glfw"
 
     filter {"platforms:Emscripten"}
-        defines { "SEAL_WEBGL", "SEAL_GLES2" }
+        defines { "SEAL_WEBGL", "SEAL_GLES3" }
         system "Emscripten"
         architecture "x86"
         linkoptions {
             "-lglfw",
         }
+
         removelinks {"glfw", "glad*"}
-        startproject "seal_ems"
+        startproject "seal_ems.js"
 
     filter {}
 
 output_dir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
+
+-- Thirdparty projects
+group "Thirdparty"
+    include "thirdparty"
+    include "thirdparty/glad_gl4"
+    include "thirdparty/glad_es2"
+    include "thirdparty/glad_es3"
+group ""
 
 -- Base projects
 include "src/core"
@@ -88,10 +96,3 @@ group ""
 group "Tests"
     include "tests/seal_core_tests"
 group "" 
-
--- Thirdparty projects
-group "Thirdparty"
-    include "thirdparty"
-    include "thirdparty/glad_gl4"
-    include "thirdparty/glad_es2"
-group ""

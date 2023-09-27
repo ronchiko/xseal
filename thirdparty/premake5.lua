@@ -29,6 +29,8 @@ project "fmt"
     filter "configurations:Release"
         runtime "Release"
         optimize "on"
+	
+	filter ""
 
 -- Google test --
 project "google-test"

@@ -2,15 +2,18 @@
 
 namespace seal::gl {
 
+	vao_context::~vao_context()
+	{
+		glBindVertexArray(0);
+	}
+
+
 	void vao_context::bind_raw(const u32 attribute_location, const u32 size)
 	{
-#if defined(SEAL_GL_NO_VAO)
-		seal_gl_verify(glEnableVertexAttribArray(attribute_location));
-#else
-		seal_gl_verify(glEnableVertexArrayAttrib(m_Vao, attribute_location));
-#endif
+		SEAL_GL_VERIFY(glEnableVertexAttribArray(attribute_location));
+
 		// clang-format off
-		seal_gl_verify(glVertexAttribPointer(
+		SEAL_GL_VERIFY(glVertexAttribPointer(
 			attribute_location,
 			size,
 			GL_FLOAT,

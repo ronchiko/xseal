@@ -1,6 +1,14 @@
 #pragma once
 
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#endif
 #include <nlohmann/json.hpp>
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 
 #include "seal/types/result.hpp"
 #include "seal/types/conversion_table.hpp"

@@ -12,9 +12,9 @@ namespace seal::gl {
 	{
 		GLuint buffer_id = 0;
 
-		seal_gl_verify(glGenBuffers(1, &buffer_id));
-		seal_gl_verify(glBindBuffer(static_cast<GLenum>(type), buffer_id));
-		seal_gl_verify(glBufferData(static_cast<GLenum>(type),
+		SEAL_GL_VERIFY(glGenBuffers(1, &buffer_id));
+		SEAL_GL_VERIFY(glBindBuffer(static_cast<GLenum>(type), buffer_id));
+		SEAL_GL_VERIFY(glBufferData(static_cast<GLenum>(type),
 									size,
 									nullptr,
 									static_cast<GLenum>(usage)));
@@ -27,8 +27,14 @@ namespace seal::gl {
 
 	void buffer::bind() const
 	{
-		glBindBuffer(static_cast<GLenum>(m_Type), m_BufferId);
+		SEAL_GL_VERIFY(glBindBuffer(static_cast<GLenum>(m_Type), m_BufferId));
 	}
+
+	void buffer::unbind() const
+	{
+		SEAL_GL_VERIFY(glBindBuffer(static_cast<GLenum>(m_Type), 0));
+	}
+
 
 	buffer::buffer(const GLuint id, const type type, const size_t size)
 		: m_BufferId(id, gl_delete_buffer)

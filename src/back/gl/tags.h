@@ -9,6 +9,7 @@ namespace seal::gl {
 		Program,
 		Batch,
 		Texture,
+		UniformBuffer,
 	};
 }
 

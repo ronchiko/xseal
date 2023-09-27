@@ -2,7 +2,7 @@
 
 precision mediump float;
 
-layout(binding = 0) uniform sampler2D Texture;
+layout(binding = 1) uniform sampler2D Texture;
 
 in vec2 UvCoordinate;
 in vec4 VertexColor;

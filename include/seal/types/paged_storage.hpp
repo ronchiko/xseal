@@ -117,7 +117,7 @@ StoreT seal::paged_storage<PagedSize, StoreT>::disown(StoreT& value)
 
 	// We take the ownership from the node that points to us.
 	if(nullptr != node_pointer->previous) {
-		if(node = node_pointer->previous->next) {
+		if((node = node_pointer->previous->next)) {
 			node->previous->next = node->next;
 		}
 	} else {

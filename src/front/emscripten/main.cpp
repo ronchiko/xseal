@@ -12,14 +12,23 @@
 
 using namespace seal;
 
-void main_loop()
+namespace 
 {
-	glfwPollEvents();
-	const auto& ctx = ems::context::get();
-	seal_mute_exceptions({ seal::engine::tick(0); });
+	void glfw_window_size_changed(GLFWwindow *window, const int width, const int height)
+	{
+		api::update_resolution(v2<u32>{ width, height });
+	}
 
-	glfwSwapBuffers(ctx.window);
+	void main_loop()
+	{
+		glfwPollEvents();
+		const auto& ctx = ems::context::get();
+		seal_mute_exceptions({ seal::engine::tick(0); });
+
+		glfwSwapBuffers(ctx.window);
+	}
 }
+
 
 int main()
 {
@@ -31,8 +40,11 @@ int main()
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
 	ctx.window = glfwCreateWindow(1200, 700, "XSeal WebHost", nullptr, nullptr);
 	glfwMakeContextCurrent(ctx.window);
+	glfwSetFramebufferSizeCallback(ctx.window, &glfw_window_size_changed);
 
 	seal::engine::create();
+
+	// TODO: Find dynamically
 	seal::api::update_resolution({ 1200, 700 });
 
 	emscripten_set_main_loop(main_loop, 0, true);

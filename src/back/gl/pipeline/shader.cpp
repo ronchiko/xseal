@@ -5,6 +5,14 @@
 #include "gl.hpp"
 #include "gl_id.hpp"
 
+namespace {
+	constexpr GLint UNSUPPORTED_SHADER_TYPE = -1;
+}
+
+#ifndef GL_COMPUTE_SHADER
+#define GL_COMPUTE_SHADER UNSUPPORTED_SHADER_TYPE
+#endif
+
 namespace seal::gl {
 	constexpr static GLint GL_SHADER_MAPPING[] = {
 		GL_VERTEX_SHADER,
@@ -12,18 +20,24 @@ namespace seal::gl {
 		GL_COMPUTE_SHADER,
 	};
 
-	shader shader::from_resource(const resource& resource, type type)
+	shader shader::from_resource(const resource& resource, const type type)
 	{
-		gl_id shader = { glCreateShader(GL_SHADER_MAPPING[static_cast<u32>(type)]), glDeleteShader };
+		const auto shader_type = GL_SHADER_MAPPING[static_cast<u32>(type)];
+		if(UNSUPPORTED_SHADER_TYPE == shader_type)
+		{
+			throw failure("Shader type not supported!");
+		}
+
+		gl_id shader = { glCreateShader(shader_type), glDeleteShader };
 
 		// Load the resource
 		const auto shader_source = resource->load_all();
 
 		const auto* source_ptr = reinterpret_cast<const GLchar *>(shader_source.data());
-		seal_gl_verify(glShaderSource(shader, 1, &source_ptr, nullptr));
-		seal_gl_verify(glCompileShader(shader));
+		SEAL_GL_VERIFY(glShaderSource(shader, 1, &source_ptr, nullptr));
+		SEAL_GL_VERIFY(glCompileShader(shader));
 
-		// Handl errors in compeletion
+		// Handle errors in compilation
 		GLint was_successful = 0;
 		glGetShaderiv(shader, GL_COMPILE_STATUS, &was_successful);
 		if(GL_FALSE == was_successful) {
@@ -40,9 +54,9 @@ namespace seal::gl {
 				seal::log::error("{}", log.data());
 			}
 
-			throw seal::failure("Failed to compile shader");
+			throw failure("Failed to compile shader");
 		}
 
-		return seal::gl::shader(std::move(shader));
+		return gl::shader(std::move(shader));
 	}
 }

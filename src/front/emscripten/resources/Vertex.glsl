@@ -1,11 +1,18 @@
-#version 100
+#version 300 es
 
-attribute vec3 Seal_Vertex;
-attribute vec2 Seal_UV;
-attribute vec4 Seal_Tint;
+// Provided by the world camera
+layout(std140) uniform Seal_GlobalMatrices
+{
+	mat4x4 ProjectMatrix;
+	mat4x4 ViewMatrix;
+};
 
-varying vec4 VertexColor;
-varying vec2 UvCoordinate;
+in vec3 Seal_Vertex;
+in vec2 Seal_UV;
+in vec4 Seal_Tint;
+
+out vec4 VertexColor;
+out vec2 UvCoordinate;
 
 void main()
 {

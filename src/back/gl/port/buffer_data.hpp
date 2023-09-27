@@ -12,7 +12,7 @@ namespace seal::gl {
 		{
 			void *operator()(const GLenum type, const size_t start, const size_t offset) const
 			{
-				void *mapped_address = seal_gl_verify(glMapBufferRange(type, start, offset, Flags));
+				void *mapped_address = SEAL_GL_VERIFY(glMapBufferRange(type, start, offset, Flags));
 				return mapped_address;
 			}
 		};
@@ -21,7 +21,7 @@ namespace seal::gl {
 		{
 			void operator()(void *, const GLenum type) const
 			{
-				seal_gl_verify(glUnmapBuffer(type));
+				SEAL_GL_VERIFY(glUnmapBuffer(type));
 			}
 		};
 	}

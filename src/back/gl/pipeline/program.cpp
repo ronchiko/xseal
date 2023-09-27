@@ -1,7 +1,7 @@
 #include "pipeline/program.hpp"
 
-#include "seal/types/overload.hpp"
 #include "texture/texture.hpp"
+#include "pipeline/uniform_buffer_object.hpp"
 
 namespace seal::gl {
 
@@ -24,10 +24,10 @@ namespace seal::gl {
 					continue;
 				}
 
-				seal_gl_verify(glAttachShader(program, shader.id()));
+				SEAL_GL_VERIFY(glAttachShader(program, shader.id()));
 			}
 
-			seal_gl_verify(glLinkProgram(program));
+			SEAL_GL_VERIFY(glLinkProgram(program));
 
 			GLint was_successful = 0;
 			glGetProgramiv(program, GL_LINK_STATUS, &was_successful);
@@ -109,12 +109,14 @@ namespace seal::gl {
 		case api::uniform_kind::Texture2d:
 		{
 			const auto& texture = std::get<u32>(update.updated_value);
-			seal_gl_verify(glUniform1i(update.location, texture));
-			break;
+			SEAL_GL_VERIFY(glUniform1i(update.location, texture));
+			return;
 		}
-		default:
-			throw seal::failure("Invalid uniform kind!");
+		case api::uniform_kind::Buffer:
+
+			return;
 		}
+		throw seal::failure("Invalid uniform kind!");
 	}
 
 	void program::bind_attributes(const api::pipeline_stage_type type)
@@ -124,10 +126,10 @@ namespace seal::gl {
 			throw seal::fail<failure::NotImplemented>();
 		}
 
-		const u32 vertex_handle = seal_gl_verify(glGetAttribLocation(m_Id,
+		const u32 vertex_handle = SEAL_GL_VERIFY(glGetAttribLocation(m_Id,
 																	 api::shader::VERTEX_PARAM_NAME));
-		const u32 uv_handle = seal_gl_verify(glGetAttribLocation(m_Id, api::shader::UV_PARAM_NAME));
-		const u32 tint_handle = seal_gl_verify(glGetAttribLocation(m_Id,
+		const u32 uv_handle = SEAL_GL_VERIFY(glGetAttribLocation(m_Id, api::shader::UV_PARAM_NAME));
+		const u32 tint_handle = SEAL_GL_VERIFY(glGetAttribLocation(m_Id,
 																   api::shader::TINT_PARAM_NAME));
 
 		m_Information.current = shader_information::graphics{
@@ -142,6 +144,24 @@ namespace seal::gl {
 		bind();
 
 		for(const auto& uniform : uniforms) {
+			// We need to treat buffer object differently because they use different API to be bound.
+			if(uniform.kind == api::uniform_kind::Buffer) {
+				const auto block_index = SEAL_GL_VERIFY(glGetUniformBlockIndex(m_Id,
+																			   uniform.uniform_name.c_str()));
+				if(GL_INVALID_INDEX == block_index) {
+					log::error("Failed to find block index for: '{}'", uniform.uniform_name);
+					throw gl::fail();
+				}
+
+				const auto& abstracted_ubo = std::get<api::abstract_t>(uniform.default_value);
+				const auto* ubo = abstracted_ubo.acquire<gl::uniform_buffer_type>();
+
+				SEAL_GL_VERIFY(glUniformBlockBinding(m_Id,
+													 block_index,
+													 ubo->bound_index()));
+				continue;
+			}
+
 			const u32 location = glGetUniformLocation(m_Id, uniform.uniform_name.c_str());
 			if(location == INVALID_UNIFORM_LOCATION) {
 				seal::log::error("GL: Failed to bind named uniform: {}", uniform.uniform_name);
