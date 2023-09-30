@@ -19,6 +19,7 @@ bin-int/
 *.vcproj
 *.vcxproj.filters
 *.vcxproj.user
+*.user
 
 # Make files
 Makefile

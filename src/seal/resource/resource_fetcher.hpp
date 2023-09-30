@@ -1,5 +1,7 @@
 #pragma once
 
+#include <utility>
+
 #include "seal/api/resource.hpp"
 
 namespace seal {
@@ -9,7 +11,7 @@ namespace seal {
 	template<typename T, typename... Args>
 	resource_interface *make_resource(Args&&...args)
 	{
-		return new T(args...);
+		return new T(std::forward<Args>(args)...);
 	}
 
 	class resource_fetcher
@@ -19,10 +21,10 @@ namespace seal {
 
 		/**
 		   Fetches a resource using its path.
-		  
+
 		   \param path: The path to fetch
 		   \note: The allocated resource is owned by the caller
 		 */
-		virtual resource_interface* fetch(const std::string& path) = 0;
+		virtual resource_interface *fetch(const std::string& path) = 0;
 	};
 }

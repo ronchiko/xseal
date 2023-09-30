@@ -25,7 +25,7 @@ workspace "XSeal"
     }
     
     includedirs {
-        "include",
+        "src",
         "thirdparty/fmt/include",
         "thirdparty/glfw/include",
         "thirdparty/glm",
@@ -77,9 +77,8 @@ group "Thirdparty"
 group ""
 
 -- Base projects
-include "src/core"
+include "src/seal"
 include "src/resources"
-include "include/seal"
 
 group "Frontends"
     filter {"platforms:Windows"}

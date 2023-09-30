@@ -16,6 +16,5 @@
 #define SEAL_DEBUGBREAK() __builtin_debugtrap()
 #endif
 #else
-#define seal_debug_only(expr) expr
+#define seal_debug_only(expr)
 #endif
-
