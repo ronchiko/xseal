@@ -4,7 +4,7 @@ project "seal_glfw"
 
     filter { "system:Windows" }
         prebuildcommands {
-            "python %{WKS_DIR}/build/embed.py -d resources/ --recurse -o .embed.generated.cpp"
+            "python %{WKS_DIR}/scripts/build/embed.py -d resources/ --recurse -o .embed.generated.cpp"
         }
 
         files {

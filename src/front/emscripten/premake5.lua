@@ -5,7 +5,7 @@ project "seal_ems.js"
 
     filter { "system:Emscripten" }
         prebuildcommands {
-            "python %{WKS_DIR}/build/embed.py -d resources/ --recurse -o .embed.generated.cpp"
+            "python %{WKS_DIR}/scripts/build/embed.py -d resources/ --recurse -o .embed.generated.cpp"
         }
         files {
             "**.cpp",

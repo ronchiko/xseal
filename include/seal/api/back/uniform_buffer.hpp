@@ -25,6 +25,4 @@ namespace seal::api
 		\param data: The buffer to update.
 	 */
 	void update_uniform_buffer(abstract_t uniform_buffer, const void *data);
-
-	void bind_uniform_buffer(abstract_t ubo);
 }

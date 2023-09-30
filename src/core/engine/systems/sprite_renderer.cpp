@@ -25,7 +25,6 @@ namespace seal::system {
 		auto& trn = ent2.add<transform>();
 		trn.position.x = -1;
 
-
 		// auto re = sp.pipeline.acquire();
 		// seal_verify_result(re);
 

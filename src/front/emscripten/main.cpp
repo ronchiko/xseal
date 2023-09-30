@@ -2,7 +2,7 @@
 #include <emscripten.h>
 #include <GLFW/glfw3.h>
 
-#include "seal/api/back/backend.hpp"
+#include "seal/api/core/display.hpp"
 #include "seal/defenitions.h"
 #include "seal/engine/components/transform.hpp"
 #include "seal/engine/ecs/system.hpp"
@@ -16,7 +16,7 @@ namespace
 {
 	void glfw_window_size_changed(GLFWwindow *window, const int width, const int height)
 	{
-		api::update_resolution(v2<u32>{ width, height });
+		api::signal_viewport_change(v2<u32>{ width, height });
 	}
 
 	void main_loop()
@@ -45,7 +45,7 @@ int main()
 	seal::engine::create();
 
 	// TODO: Find dynamically
-	seal::api::update_resolution({ 1200, 700 });
+	api::signal_viewport_change({ 1200, 700 });
 
 	emscripten_set_main_loop(main_loop, 0, true);
 

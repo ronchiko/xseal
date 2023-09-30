@@ -23,6 +23,8 @@ namespace seal {
 	using f32 = float;
 	using f64 = double;
 
+	using radians_t = f32; // Species the values should be in radians
+
 	// Vectors
 
 	template<typename TElement>

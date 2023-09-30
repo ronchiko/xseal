@@ -1,8 +1,9 @@
-#include "seal/api/back/backend.hpp"
+#include "seal/api/core/display.hpp"
 
 #include "types/window.hpp"
 
 #include "glfw.hpp"
+#include "seal/log/log.hpp"
 #include "seal/defenitions.h"
 
 namespace seal::glfw {
@@ -10,7 +11,7 @@ namespace seal::glfw {
 	{
 		void glfw_window_size_changed(GLFWwindow *window, const int width, const int height)
 		{
-			api::update_resolution(v2<u32>{ width, height });
+			api::signal_viewport_change(v2<u32>{ width, height });
 		}
 	}
 

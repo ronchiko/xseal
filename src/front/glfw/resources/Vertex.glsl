@@ -3,7 +3,7 @@
 // Provided by the world camera
 layout(std140, binding = 0) uniform Seal_GlobalMatrices
 {
-	mat4x4 ProjectMatrix;
+	mat4x4 ProjectionMatrix;
 	mat4x4 ViewMatrix;
 };
 
@@ -16,7 +16,7 @@ out vec2 UvCoordinate;
 
 void main()
 {
-	gl_Position = vec4(Seal_Vertex, 1.0);
+	gl_Position = ProjectionMatrix * ViewMatrix * vec4(Seal_Vertex, 1.0);
 
 	VertexColor = Seal_Tint;
 	UvCoordinate = Seal_UV;

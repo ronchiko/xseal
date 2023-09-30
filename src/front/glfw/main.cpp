@@ -7,6 +7,7 @@
 #include "types/window.hpp"
 
 #include "seal/api/back/backend.hpp"
+#include "seal/api/core/display.hpp"
 
 #include "seal/engine/components/sprite.hpp"
 #include "seal/engine/ecs/entity.hpp"
@@ -29,7 +30,7 @@ void invoke_main()
 	seal::engine::create();
 	seal::finally stop_engine([]() { seal::engine::stop(); });
 
-	seal::api::update_resolution(window.resolution());
+	seal::api::signal_viewport_change(window.resolution());
 
 	seal::log::info("Finished loading engine - starting main loop");
 

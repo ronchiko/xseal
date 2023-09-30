@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 #include <GLFW/glfw3.h>
 
 #include "seal/types.hpp"
@@ -32,7 +34,7 @@ namespace seal::glfw {
 		/**
 		   Checks if the window should close.
 		 */
-		bool should_close() const;
+		[[nodiscard]] bool should_close() const;
 
 		/**
 		   Swaps the windows buffers.
@@ -42,7 +44,7 @@ namespace seal::glfw {
 		/**
 		   Gets the resolution of this window.
 		 */
-		v2<u32> resolution() const;
+		[[nodiscard]] v2<u32> resolution() const;
 
 	private:
 		explicit constexpr window(GLFWwindow *window) noexcept;

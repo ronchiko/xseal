@@ -36,12 +36,4 @@ namespace seal {
 		buffer->write(0, std::span{ static_cast<const char *>(data), buffer->size() });
 	}
 
-	void api::bind_uniform_buffer(abstract_t ubo)
-	{
-		const auto *buffer = ubo.acquire<gl::uniform_buffer_type>();
-
-		buffer->bind();
-	}
-
-
 }

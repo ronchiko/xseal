@@ -3,7 +3,7 @@ project "seal_resources"
     kind "StaticLib"
 
     prebuildcommands {
-        "python %{WKS_DIR}/build/embed.py -d root/ --recurse -o .embed.generated.cpp --export register_global_resources"
+        "python %{WKS_DIR}/scripts/build/embed.py -d root/ --recurse -o .embed.generated.cpp --export register_global_resources"
     }
 
     files {
