@@ -1,23 +1,18 @@
----@diagnostic disable: undefined-global
-project "seal_core"
-    kind "StaticLib"
-    
-    filter {}
-    files {
-        "**.cpp",
-        "**.hpp",
-        "**.h",
-        "**.inl",
+local XSealLibrary = require "xseal/library"
+
+local function _create_project()
+    local xSeal = XSealLibrary:new {
+        name = "XSeal"
     }
 
-    includedirs {
-        "."
+    xSeal:setup_linking {
+        links = {
+            "fmt",
+            "XSealResources"
+        }
     }
 
-    links {
-        "fmt",
-        "seal_resources"
-    }
+    return xSeal
+end
 
-    targetdir ("%{wks.location}/out/" .. output_dir .. "/%{prj.name}")
-    objdir ("%{wks.location}/obj/" .. output_dir .. "/%{prj.name}")
+return _create_project():generate()

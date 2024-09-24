@@ -35,7 +35,7 @@ namespace seal {
 	struct conversion_table;
 
 	/**
-		Converts between 2 string.
+		Converts between 2 types using a conversion table.
 	 */
 	template<typename ValueT, typename LookupT>
 	ValueT convert(const LookupT& lookup)

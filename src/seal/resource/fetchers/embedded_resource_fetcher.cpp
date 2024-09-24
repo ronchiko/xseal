@@ -8,7 +8,7 @@ namespace seal {
 		: m_EmbeddedResources()
 	{}
 
-	resource_interface * embedded_resource_fetcher::fetch(const std::string& path)
+	resource_interface *embedded_resource_fetcher::fetch(const std::string& path)
 	{
 		const auto iterator = m_EmbeddedResources.find(path);
 		if(iterator == m_EmbeddedResources.end()) {

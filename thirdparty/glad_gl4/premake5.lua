@@ -1,27 +1,12 @@
----@diagnostic disable: undefined-global
-project "glad_gl4"
-    kind "StaticLib"
-    language "C"
+local XSealLibrary = require "xseal/library"
 
-    targetdir ("out/" .. output_dir .. "/%{prj.name}")
-    objdir ("obj/" .. output_dir .. "/%{prj.name}")
-
-    files
-    {
-        "include/glad/glad.h",
-        "include/KHR/khrplatform.h",
-        "src/glad.c"
+local function _create_library()
+    local library = XSealLibrary:new {
+        name = "GladGl4",
+        include_root = "include"
     }
 
-    includedirs
-    {
-        "include"
-    }
+    return library
+end
 
-    filter "configurations:Debug"
-        runtime "Debug"
-        symbols "on"
-
-    filter "configurations:Release"
-        runtime "Release"
-        optimize "on"
+return _create_library():generate()

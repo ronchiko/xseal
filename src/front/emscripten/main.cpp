@@ -3,6 +3,7 @@
 #include <GLFW/glfw3.h>
 
 #include "seal/api/core/display.hpp"
+#include "seal/xseal.hpp"
 #include "seal/defenitions.h"
 #include "seal/engine/components/transform.hpp"
 #include "seal/engine/ecs/system.hpp"
@@ -30,7 +31,7 @@ namespace
 }
 
 
-int main()
+void xseal::start_engine()
 {
 	auto& ctx = ems::context::get();
 
@@ -48,6 +49,4 @@ int main()
 	api::signal_viewport_change({ 1200, 700 });
 
 	emscripten_set_main_loop(main_loop, 0, true);
-
-	return 0;
 }

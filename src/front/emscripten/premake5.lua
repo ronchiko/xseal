@@ -1,41 +1,36 @@
----@diagnostic disable: undefined-global
+local XSealLibrary = require "xseal/library"
 
-project "seal_ems.js"
-    kind "ConsoleApp"
 
-    filter { "system:Emscripten" }
-        prebuildcommands {
-            "python %{WKS_DIR}/scripts/build/embed.py -d resources/ --recurse -o .embed.generated.cpp"
-        }
-        files {
-            "**.cpp",
-            "**.hpp",
-            "**.h"
-        }
+local function _create_project()
+    local xSealWeb = XSealLibrary:new {
+        name = "XSealWebGL",
+        platform = "WebGL"
+    }
 
-        removefiles { "resources/**" }
+    xSealWeb:add_source_file_pattern("index.html")
+    xSealWeb:add_include_directory("C:/Dev/emsdk/upstream/emscripten/cache/sysroot/include") -- TODO: Understand where emsdk is
 
-        includedirs {
-            ".",
-            "C:/Dev/emsdk/upstream/emscripten/cache/sysroot/include"
-        }
-
-        links {
-            "seal_core",
-            "seal_resources",
-            "seal_gl",
-            "fmt",
-            "glad_es3",
-            "glfw3"
-        }
-
-        linkoptions {
+    xSealWeb:embed_resource { resources_directory = "resources/" }
+    xSealWeb:setup_linking {
+        merge = true,
+        options = {
             "-s USE_WEBGL2=1",
             "-s FULL_ES3=1",
             "-s WASM=3",
             "-s USE_GLFW=3",
             "-fwasm-exceptions",
             "-error-limit=0"
+        },
+        links = {
+            "seal_resources",
+            "seal_gl",
+            "fmt",
+            "glad_es3",
+            "glfw3"
         }
+    }
 
-    filter ""
+    return xSealWeb
+end
+
+return _create_project():generate()

@@ -5,7 +5,8 @@
 #include <fmt/format.h>
 
 #include "seal/types/failure.hpp"
-
+#include "seal/debug.h"
+#include "seal/defenitions.h"
 
 
 namespace seal::log {

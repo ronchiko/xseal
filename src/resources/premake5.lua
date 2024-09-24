@@ -1,21 +1,16 @@
----@diagnostic disable: undefined-global
-project "seal_resources"      
-    kind "StaticLib"
+local XSealLibrary = require "xseal/library"
 
-    prebuildcommands {
-        "python %{WKS_DIR}/scripts/build/embed.py -d root/ --recurse -o .embed.generated.cpp --export register_global_resources"
+local function _create_library()
+    local xSealResources = XSealLibrary:new { name = "XSealResources" }
+    xSealResources:add_source_file_pattern("root/**")
+
+    xSealResources:embed_resource {
+        resources_directory = "root",
+        export_name = "register_global_resources"
     }
 
-    files {
-        ".embed.generated.cpp",
-        "root/**"
-    }
 
-    removefiles "resources/**"
+    return xSealResources
+end
 
-    includedirs {
-        "."
-    }
-
-    targetdir ("%{wks.location}/out/" .. output_dir .. "/%{prj.name}")
-    objdir ("%{wks.location}/obj/" .. output_dir .. "/%{prj.name}")
+return _create_library():generate()

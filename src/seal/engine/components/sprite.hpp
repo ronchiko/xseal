@@ -7,27 +7,29 @@
 #include "seal/engine/resource.hpp"
 
 namespace seal {
-	struct sprite_slice
-	{
-		resource_ref<texture2d> texture = R"(::\EngineLogo.png)";
-		v4<f32> rect = seal::UNIT_RECT;
-	};
+    struct sprite_slice
+    {
+        resource_ref<texture2d> texture = R"(::\EngineLogo.png)";
+        v4<f32> rect = seal::UNIT_RECT;
+    };
 
-	struct sprite
-	{
-		union
-		{
-			u8 flags = 0;
+    struct sprite
+    {
+        union
+        {
+            u8 flags = 0;
 
-			struct
-			{
-				// If this is 0 this sprite's alpha channels are ignored.
-				u8 transparent:1;
-			};
-		};
+            struct
+            {
+                // If this is 0 this sprite's alpha channels are ignored.
+                u8 transparent:1;
+            };
+        };
 
-		color tint = seal::WHITE;
-		resource_ref<pipeline> pipeline = R"(::\2d\Default.ppln)";
-		sprite_slice slice = { R"(::\EngineLogo.png)", {0, 0, 0.5f, 0.5f} };
-	};
+        color tint = seal::WHITE;
+        resource_ref<pipeline> pipeline = R"(::\2d\Default.ppln)";
+        sprite_slice slice = { R"(::\EngineLogo.png)", {0, 0, 0.5f, 0.5f} };
+    };
+
+    using Sprite = sprite;
 }

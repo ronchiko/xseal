@@ -37,11 +37,11 @@ namespace seal {
 		return m_Resource->load_all();
 	}
 
-	u32 unique_resource::load(const std::span<u8> span) const
+	std::span<const u8> unique_resource::load(const u32 bytes) const
 	{
 		seal_assert(nullptr != m_Resource, "Usage of null resource!");
 
-		return m_Resource->load(span);
+		return m_Resource->load(bytes);
 	}
 
 	void unique_resource::release() noexcept

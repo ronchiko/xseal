@@ -1,31 +1,22 @@
----@diagnostic disable: undefined-global
-project "seal_glfw"      
-    kind "ConsoleApp"
+local XSealLibrary = require "xseal/library"
 
-    filter { "system:Windows" }
-        prebuildcommands {
-            "python %{WKS_DIR}/scripts/build/embed.py -d resources/ --recurse -o .embed.generated.cpp"
+
+local function _create_library()
+    local xSealWindows = XSealLibrary:new {
+        name = "XSealWindows",
+        platform = "Windows"
+    }
+    xSealWindows:embed_resource { resources_directory = "resources" }
+    xSealWindows:setup_linking {
+        merge = true,
+        links = {
+            "glfw",
+            "fmt",
+            "seal_gl"
         }
-
-        files {
-            "**.cpp",
-            "**.hpp",
-            "**.h",
-            ".embed.generated.cpp"
-        }
-
-        removefiles "resources/**"
-
-    includedirs {
-        "."
     }
 
-    links {
-        "glfw",
-        "fmt",
-        "seal_gl",
-        "seal_core"
-    }
+    return xSealWindows
+end
 
-    targetdir ("%{wks.location}/out/" .. output_dir .. "/%{prj.name}")
-    objdir ("%{wks.location}/obj/" .. output_dir .. "/%{prj.name}")
+return _create_library():generate()

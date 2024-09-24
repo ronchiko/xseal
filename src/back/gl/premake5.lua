@@ -1,37 +1,31 @@
----@diagnostic disable: undefined-global
-project "seal_gl"          
-    files {
-        "**.cpp",
-        "**.hpp",
-        "**.h",
+local Filter = require "xseal/solution/filters"
+local SolutionBuilder = require "xseal/solution/solution_builder"
+local XSealLibrary = require "xseal/library"
+
+
+local function _create_library()
+    local xSealGl = XSealLibrary:new {
+        name = "XSealGLBackend"
     }
 
-    includedirs {
-        "."
+    xSealGl:setup_linking {
+        links = {
+            "fmt",
+            "XSeal"
+        }
     }
 
-    links {
-        "fmt",
-        "seal_core"
-    }
+    xSealGl:filtered(Filter:platform("Windows"), function()
+        SolutionBuilder:set("links", { "glad_gl4" })
+        SolutionBuilder:set("includedirs", { "%{wks.location}/thirdparty/glad_gl4/include" })
+    end)
 
-    targetdir ("%{wks.location}/out/" .. output_dir .. "/%{prj.name}")
-    objdir ("%{wks.location}/obj/" .. output_dir .. "/%{prj.name}")
+    xSealGl:filtered(Filter:platform("WebGL"), function()
+        SolutionBuilder:set("links", { "glad_es3" })
+        SolutionBuilder:set("includedirs", { "%{wks.location}/thirdparty/glad_es3/include" })
+    end)
 
-    filter { "platforms:Windows" }
-        links {
-            "glad_gl4"
-        }
-        includedirs {
-            "%{wks.location}/thirdparty/glad_gl4/include",
-        }
-    
-    filter { "platforms:Emscripten" }
-        links {
-            "glad_es3"
-        }
-        includedirs {
-            "%{wks.location}/thirdparty/glad_es3/include",
-        }
+    return xSealGl
+end
 
-    filter ""
+return _create_library():generate()

@@ -124,3 +124,4 @@ struct fmt::formatter<seal::failure>
 		return fmt::format_to(ctx.out(), "{}", failure.what());
 	}
 };
+

@@ -17,14 +17,16 @@ namespace seal::api {
 	{
 		constexpr vertex() = default;
 
-		constexpr vertex(const v3<f32> position, const v2<f32> uv, const color tint)
+		constexpr vertex(const v3<f32> position, const v2<f32> uv, const v3<f32> normal, const color tint)
 			: position(position)
 			, uv(uv)
+			, normal(normal)
 			, tint(tint)
 		{}
 
 		v3<f32> position = v3<f32>{ 0, 0, 0 };
 		v2<f32> uv = v2<f32>{ 0, 0 };
+		v3<f32> normal = v3<f32>{0, 0, 0};
 		color tint = WHITE;
 	};
 

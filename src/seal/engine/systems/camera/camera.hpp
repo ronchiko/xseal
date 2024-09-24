@@ -132,6 +132,8 @@ namespace seal {
 		bool m_Active = false;
 		variant_t m_Camera = orthographic{};
 	};
+
+	using Camera = camera;
 }
 
 constexpr bool seal::camera::is_active() const

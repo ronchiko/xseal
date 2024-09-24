@@ -22,10 +22,9 @@ namespace seal {
 		/**
 		   Loads an a part of the resource into a span.
 		  
-		   \param span: The span to put the result into
-		   \returns: The amount of written to the input span
+		   \param bytes_to_read: The amount of bytes to read.
 		 */
-		virtual u32 load(std::span<u8> span) = 0;
+		virtual std::span<const u8> load(u32 bytes_to_read) = 0;
 	};
 
 	/**
@@ -51,20 +50,20 @@ namespace seal {
 
 		~unique_resource() noexcept;
 
-		std::span<const u8> load_all() const;
-		u32 load(std::span<u8> span) const;
+		[[nodiscard]] std::span<const u8> load_all() const;
+		[[nodiscard]] std::span<const u8> load(u32 bytes) const;
 
 		/**
 		   The Id of the resource.
 		 */
-		constexpr id id() const {
+		[[nodiscard]] constexpr id id() const {
 			return m_Id;
 		}
 
 		/**
 		   The path to the resource.
 		 */
-		constexpr const std::string& path() const {
+		[[nodiscard]] constexpr const std::string& path() const {
 			return m_Path;
 		}
 

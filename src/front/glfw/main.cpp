@@ -7,12 +7,14 @@
 #include "types/window.hpp"
 
 #include "seal/api/back/backend.hpp"
+#include "seal/xseal.hpp"
 #include "seal/api/core/display.hpp"
-
+#include "seal/engine/formats/wavefront/wavefront.hpp"
 #include "seal/engine/components/sprite.hpp"
 #include "seal/engine/ecs/entity.hpp"
 #include "seal/engine/engine.hpp"
 #include "seal/types/finally.hpp"
+#include "seal/engine/formats/wavefront/wavefront.hpp"
 
 void initialize_engine()
 {
@@ -40,7 +42,7 @@ void invoke_main()
 	}
 }
 
-int main()
+void xseal::start_engine()
 {
 	invoke_main();
 }

@@ -20,4 +20,6 @@ namespace seal {
 		quat rotation = glm::quat_identity<f32, glm::defaultp>();
 		v3<f32> scale = {1, 1, 1};
 	};
+
+	using Transform = transform;
 }

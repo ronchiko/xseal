@@ -1,34 +1,22 @@
----@diagnostic disable: undefined-global
-project "seal_core_ut"
-    kind "ConsoleApp"
-    language "C++"
-    cdialect "C17"
-	cppdialect "C++20"
+local XSealLibrary = require "xseal/library"
 
-    targetdir ("out/" .. output_dir .. "/%{prj.name}")
-    objdir ("obj/" .. output_dir .. "/%{prj.name}")
-
-    includedirs {
-        "%{WKS_DIR}/thirdparty/googletest/googletest/include",
-        "%{WKS_DIR}/include",
-        "%{WKS_DIR}/tests"
+local function _create_project()
+    local coreTests = XSealLibrary:new {
+        name = "XSealCoreTests"
     }
 
-    filter {"platforms:Windows"}
-        files {
-            "**.cpp",
-            "**.hpp"
+    coreTests:setup_linking {
+        links = {
+            "XSeal",
+            "google-test"
         }
-
-    links {
-        "seal_core",
-        "google-test"
     }
 
-    filter "configurations:Debug"
-        runtime "Debug"
-        symbols "on"
+    coreTests:add_include_directory("${wks.location}/thirdparty/googletest/googletest/include")
+    coreTests:add_include_directory("${wks.location}/include")
+    coreTests:add_include_directory("${wks.location}/tests")
 
-    filter "configurations:Release"
-        runtime "Release"
-        optimize "on"
+    return coreTests
+end
+
+return _create_project():generate()

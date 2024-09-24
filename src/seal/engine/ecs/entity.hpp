@@ -64,6 +64,8 @@ namespace seal {
 
 		entity_id m_Id;
 	};
+
+	using Entity = entity;
 }
 
 template<typename ComponentT, typename... Args>

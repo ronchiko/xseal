@@ -1,77 +1,32 @@
----@diagnostic disable: undefined-global
+local SolutionBuilder = require "xseal/solution/solution_builder"
+local XSealLibrary = require "xseal/library"
+local Filter = require "xseal/solution/filters"
 
--- FMT library
-project "fmt"
-    kind "StaticLib"
-    language "C++"
-	cppdialect "C++20"
-
-    targetdir ("out/" .. output_dir .. "/%{prj.name}")
-    objdir ("obj/" .. output_dir .. "/%{prj.name}")
-
-    includedirs {
-        "fmt/include"
-    }
-
-    files {
-        "fmt/src/format.cc"
-    }
-
-	filter "platforms:windows"
-		files {
-			"fmt/src/os.cc"
-		}
-
-    filter "configurations:Debug"
-        runtime "Debug"
-        symbols "on"
-
-    filter "configurations:Release"
-        runtime "Release"
-        optimize "on"
-	
-	filter ""
-
--- Google test --
-project "google-test"
-	kind "StaticLib"
-	language "C++"
-	cppdialect "C++20"
-
-	targetdir ("out/" .. output_dir .. "/%{prj.name}")
-	objdir ("obj/" .. output_dir .. "/%{prj.name}")
-
-	includedirs {
-		"googletest/googletest/include",
-		"googletest/googletest",
+local function _create_fmt_library()
+	local fmt = XSealLibrary:new {
+		name = "fmt",
+		initialize_sources = false,
 	}
 
-	files {
-		"googletest/googletest/src/gtest-all.cc",
-		"googletest/googletest/*.h",
-		"googletest/googletest/*.hpp",
-	}
+	fmt:add_include_directory("fmt/include")
+	fmt:add_source_file_pattern("fmt/src/format.cc")
 
-	filter "configurations:Debug"
-		runtime "Debug"
-		symbols "on"
+	fmt:filtered(Filter:platform("Windows"), function()
+		SolutionBuilder:set("files", { "fmt/src/format.cc" })
+	end)
 
-	filter "configurations:Release"
-		runtime "Release"
-		optimize "on"
-
+	return fmt
+end
 
 -- GLFW library
-project "glfw"
-	kind "StaticLib"
-	language "C"
+local function _create_glfw_library()
+	local glfw = XSealLibrary:new {
+		name = "glfw",
+		initialize_sources = false,
+	}
 
-	targetdir ("bin/" .. output_dir .. "/%{prj.name}")
-	objdir ("bin-int/" .. output_dir .. "/%{prj.name}")
-	
-	filter { "system:not Emscripten" }
-		files
-		{
+	glfw:filtered(Filter:platform("not Emscripten"), function()
+		SolutionBuilder:set("files", {
 			"glfw/include/GLFW/glfw3.h",
 			"glfw/include/GLFW/glfw3native.h",
 			"glfw/src/glfw_config.h",
@@ -86,14 +41,15 @@ project "glfw"
 			"glfw/src/null_window.c",
 			"glfw/src/null_monitor.c",
 			"glfw/src/null_joystick.c",
-		}
-	filter {"system:Linux"}
-		pic "On"
+		})
+	end)
 
-		systemversion "latest"
+	glfw:filtered(Filter:platform("Linux"), function()
+		SolutionBuilder:set("pic", "On")
+		SolutionBuilder:set("systemversion", "Latest")
+		SolutionBuilder:set("defines", { "_GLFW_X11" })
 
-		files
-		{
+		SolutionBuilder:set("files", {
 			"glfw/src/x11_init.c",
 			"glfw/src/x11_monitor.c",
 			"glfw/src/x11_window.c",
@@ -105,18 +61,14 @@ project "glfw"
 			"glfw/src/egl_context.c",
 			"glfw/src/osmesa_context.c",
 			"glfw/src/linux_joystick.c"
-		}
+		})
+	end)
 
-		defines
-		{
-			"_GLFW_X11"
-		}
+	glfw:filtered(Filter:platform("Windows"), function()
+		SolutionBuilder:set("systemversion", "Latest")
+		SolutionBuilder:set("defines", { "_GLFW_WIN32", "_CRT_SECURE_NO_WARNINGS" })
 
-	filter {"system:Windows"}
-		systemversion "latest"
-
-		files	
-		{
+		SolutionBuilder:set("files", {
 			"glfw/src/win32_init.c",
 			"glfw/src/win32_joystick.c",
 			"glfw/src/win32_module.c",
@@ -127,19 +79,29 @@ project "glfw"
 			"glfw/src/wgl_context.c",
 			"glfw/src/egl_context.c",
 			"glfw/src/osmesa_context.c"
-		}
+		})
+	end)
 
-		defines 
-		{ 
-			"_GLFW_WIN32",
-			"_CRT_SECURE_NO_WARNINGS"
-		}
+	return glfw
+end
 
-	filter "configurations:Debug"
-		runtime "Debug"
-		symbols "on"
+-- Google test
+local function _create_googletest_library()
+	local googletest = XSealLibrary:new { name = "google-test", initialize_sources = false }
 
-	filter "configurations:Release"
-		runtime "Release"
-		optimize "on"
+	googletest:add_include_directory("googletest/googletest/include")
+	googletest:add_include_directory("googletest/googletest")
+	googletest:add_source_file_pattern("googletest/googletest/src/gtest-all.cc")
+	googletest:add_source_file_pattern("googletest/googletest/*.h")
+	googletest:add_source_file_pattern("googletest/googletest/*.hpp")
 
+	return googletest
+end
+
+include("thirdparty/glad_es2")
+include("thirdparty/glad_es3")
+include("thirdparty/glad_gl4")
+
+_create_fmt_library()
+_create_glfw_library()
+_create_googletest_library()
